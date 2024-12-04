@@ -1,0 +1,44 @@
+require('dotenv').config()
+ 
+
+if(process.env.DB_CONNECTION != "development")
+{
+  process.exit(1)
+  return;
+}
+
+
+const util = require('node:util');
+
+const exec = util.promisify(require('node:child_process').exec);
+const fs = require('fs');
+const path = require('path');
+const directory = './public';
+
+// delete all file in folder function
+async function deleteFileinFolder()
+{
+  
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
+      
+        for (const file of files) {
+        // check is file is folder
+       
+
+          fs.stat(path.join(directory, file), function(err, stats) {
+            if(!stats.isDirectory()) { 
+                fs.unlink(path.join(directory, file), err => {
+                    if (err) throw err;
+                });
+            }
+          });
+        }
+      });
+
+
+      await exec(`rm -rf build`)
+}
+
+ 
+deleteFileinFolder()

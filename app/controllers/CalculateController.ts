@@ -1,0 +1,145 @@
+import DB from "../services/DB";
+
+class Controller {
+
+  public async index(request, response) {
+    return response.inertia("dashboard/calculate", {
+        title: "Kalkulasi Berat",
+        description: "Sistem penimbangan modern untuk efisiensi bisnis Anda",
+    });
+  }
+    
+  public async store(request, response) {
+    try {
+        const body = await request.json();
+
+        const calculation = {
+            ticket_number: body.ticketNumber,
+            vehicle_number: body.vehicleNumber,
+            driver_name: body.driverName,
+            owner_name: body.ownerName,
+            entry_weight: body.entryWeight,
+            exit_weight: null,
+            price_per_kg: body.pricePerKg,
+            net_weight: 0,
+            rounded_weight: 0,
+            rounding_off: 0,
+            total_price: 0,
+            entry_datetime: body.entryDateTime,
+            exit_datetime: null,
+            user_id: body.userId
+        };
+
+        const [id] = await DB('calculations').insert(calculation);
+
+        return response.json({
+            success: true,
+            message: 'Entry data saved successfully',
+            data: {
+                id,
+                ...calculation
+            }
+        });
+
+    } catch (error) {
+        console.error('Entry error:', error);
+        return response.json({
+            success: false,
+            message: 'Failed to save entry data',
+            error: error.message
+        }, 500);
+    }
+}
+
+
+
+public async edit(request, response) {
+    try {
+      const body = await request.json();
+      const id = body.id;
+  
+      // Calculate weights
+      const weightDiff = body.entryWeight - body.exitWeight;
+      let roundedWeight;
+  
+      if (weightDiff >= 1000) {
+          roundedWeight = Math.floor(weightDiff / 100) * 100;
+      } else if (weightDiff >= 100) {
+          roundedWeight = Math.floor(weightDiff / 10) * 10;
+      } else {
+          roundedWeight = Math.floor(weightDiff);
+      }
+  
+      const calculation = {
+        ticket_number: body.ticketNumber,
+        vehicle_number: body.vehicleNumber,
+        driver_name: body.driverName,
+        owner_name: body.ownerName,
+        entry_weight: body.entryWeight,
+        exit_weight: body.exitWeight,
+        price_per_kg: body.pricePerKg,
+        net_weight: weightDiff,
+        rounded_weight: roundedWeight,
+        rounding_off: weightDiff - roundedWeight,
+        total_price: roundedWeight * body.pricePerKg,
+        entry_datetime: body.entryDateTime,
+        exit_datetime: Date.now(),
+        user_id: body.userId
+      };
+  
+      await DB('calculations').where('id', id).update(calculation);
+  
+      return response.json({
+        success: true,
+        message: 'Calculation updated successfully',
+        data: {
+          id,
+          ...calculation
+        }
+      });
+  
+    } catch (error) {
+      console.error('Update calculation error:', error);
+      return response.json({
+        success: false,
+        message: 'Failed to update calculation',
+        error: error.message
+      }, 500);
+    }
+  }
+  
+  
+
+  // Add this new method to your existing Controller class
+public async history(request, response) {
+  try {
+      const calculations = await DB('calculations')
+          .select('*')
+          .orderBy('entry_datetime', 'desc');
+
+      return response.json({
+          success: true,
+          data: calculations
+      });
+  } catch (error) {
+      console.error('Fetch calculations error:', error);
+      return response.json({
+          success: false,
+          message: 'Failed to fetch calculations',
+          error: error.message
+      }, 500);
+  }
+}
+
+
+  public async historyPage(request, response) {
+    return response.inertia("dashboard/calculateHistory")
+  }
+
+  public async destroy(request, response) {
+
+  }
+
+}
+
+export default new Controller();
