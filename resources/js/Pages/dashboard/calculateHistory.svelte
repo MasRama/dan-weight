@@ -11,6 +11,14 @@
     let selectedCalc = null;
     let showEditModal = false;
     let editingCalc = null;
+
+    function roundToNearest10(value) {
+      const remainder = value % 10;
+      if (remainder >= 5) {
+        return value + (10 - remainder);
+      }
+      return value - remainder;
+    }
     
     // Search and Filter states
   let searchQuery = "";
@@ -50,6 +58,8 @@
 
   const handleEdit = async () => {
     try {
+      const roundedExitWeight = editingCalc.exit_weight ? roundToNearest10(parseFloat(editingCalc.exit_weight)) : null;
+      
       const response = await axios.post(`/api/calculations/edit`, {
         id: editingCalc.id,
         ticketNumber: editingCalc.ticket_number,
@@ -57,7 +67,7 @@
         driverName: editingCalc.driver_name,
         ownerName: editingCalc.owner_name,
         entryWeight: editingCalc.entry_weight,
-        exitWeight: editingCalc.exit_weight,
+        exitWeight: roundedExitWeight,
         pricePerKg: editingCalc.price_per_kg,
         entryDateTime: editingCalc.entry_datetime,
         exitDateTime: editingCalc.exit_datetime,

@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-  <title>REDS</title>
+  <title>UD PUMA TRANS</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">

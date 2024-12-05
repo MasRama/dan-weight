@@ -37,6 +37,14 @@
       if (!value) return 0;
       return parseFloat(value.replace(/\./g, ''));
     }
+
+    function roundToNearest10(value) {
+      const remainder = value % 10;
+      if (remainder >= 5) {
+        return value + (10 - remainder);
+      }
+      return value - remainder;
+    }
   
     function handleNumberInput(event, field) {
       const value = event.target.value.replace(/\D/g, '');
@@ -56,7 +64,8 @@
       const exitWeight = unformatNumber(formData.exitWeight);
       const pricePerKg = unformatNumber(formData.pricePerKg);
       
-      const weightDiff = entryWeight - exitWeight;
+      const roundedExit = exitWeight ? roundToNearest10(exitWeight) : exitWeight;
+      const weightDiff = entryWeight - roundedExit;
       let roundedWeight;
   
       if (weightDiff >= 1000) {
@@ -76,21 +85,24 @@
     }
   
     async function handleSubmit() {
-  try {
-      const response = await axios.post('/api/calculate', {
-          ticketNumber: formData.ticketNumber,
-          vehicleNumber: formData.vehicleNumber,
-          driverName: formData.driverName, 
-          ownerName: formData.ownerName,
-          entryWeight: unformatNumber(formData.entryWeight),
-          exitWeight: null,
-          pricePerKg: unformatNumber(formData.pricePerKg),
-          entryDateTime: formData.entryDateTime,
-          exitDateTime: null,
-          userId: user.id
-      });
+      try {
+        const entryWeight = unformatNumber(formData.entryWeight);
+        const roundedEntryWeight = roundToNearest10(entryWeight);
+        
+        const response = await axios.post('/api/calculate', {
+            ticketNumber: formData.ticketNumber,
+            vehicleNumber: formData.vehicleNumber,
+            driverName: formData.driverName, 
+            ownerName: formData.ownerName,
+            entryWeight: roundedEntryWeight,
+            exitWeight: null,
+            pricePerKg: unformatNumber(formData.pricePerKg),
+            entryDateTime: formData.entryDateTime,
+            exitDateTime: null,
+            userId: user.id
+        });
 
-      if (response.data.success) {
+        if (response.data.success) {
           Toast('Data berhasil disimpan', "success");
           // Reset form after successful save
           formData = {
@@ -108,15 +120,12 @@
             }).split('/').join('-'),
             exitDateTime: null
           };
+        }
+      } catch (error) {
+        Toast('Gagal menyimpan data', "error");
+        console.error('Submit error:', error);
       }
-  } catch (error) {
-      Toast('Gagal menyimpan data', "error");
-      console.error('Submit error:', error);
-  }
-}
-
-
-
+    }
   </script>
   
   <GlobalLayout>
@@ -247,4 +256,3 @@
       </div>
     </div>
   </GlobalLayout>
-  

@@ -7,7 +7,7 @@
         <div class="flex h-16">
             <Link href="/" class="text-2xl font-bold relative group flex items-center">
                 <span class="relative">
-                    <span class="text-blue-500">REDS</span>
+                    <span class="text-blue-500">UD PUMA TRANS</span>
                     <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </span>
             </Link>
