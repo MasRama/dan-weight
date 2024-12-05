@@ -1,0 +1,86 @@
+@startuml
+
+skinparam {
+    BackgroundColor #FEFECE
+    ArrowColor DeepPink
+    BorderColor DeepPink
+    NodeBackgroundColor #FEFECE
+    NodeBorderColor DeepPink
+}
+
+start
+
+:User accesses system;
+
+if (Has account?) then (no)
+    :Register new account;
+endif
+
+if (Want to login?) then (yes)
+    :Login;
+    if (Valid credentials?) then (yes)
+        :Dashboard;
+    else (no)
+        :Show error message;
+        stop
+    endif
+else (no)
+    :View calculation history;
+    stop
+endif
+
+while (Continue process?) is (yes)
+    :Input entry data;
+    note right
+        - Ticket number
+        - Vehicle number
+        - Driver name
+        - Owner name
+        - Entry weight
+        - Price per kg
+    end note
+    
+    :Save entry data;
+    
+    :Wait for exit weight;
+    
+    :Input exit weight;
+    
+    :Calculate weight difference;
+    note right
+        entry_weight - exit_weight
+    end note
+    
+    if (weight >= 1000) then (yes)
+        :Round to nearest 100;
+        note right
+            floor(weight/100) * 100
+        end note
+    else if (weight >= 100) then (yes)
+        :Round to nearest 10;
+        note right
+            floor(weight/10) * 10
+        end note
+    else (no)
+        :Round to whole number;
+        note right
+            floor(weight)
+        end note
+    endif
+    
+    :Calculate final values;
+    note right
+        - Net weight
+        - Rounded weight
+        - Rounding off
+        - Total price
+    end note
+    
+    :Save calculation;
+    
+    :Display results;
+endwhile (no)
+
+stop
+
+@enduml

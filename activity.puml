@@ -1,0 +1,101 @@
+@startuml
+
+skinparam {
+    ActivityBackgroundColor #FEFECE
+    ActivityBorderColor DeepPink
+    ActivityDiamondBackgroundColor #FEFECE
+    ActivityDiamondBorderColor DeepPink
+    ActivityStartColor DeepPink
+    ActivityEndColor DeepPink
+    ArrowColor DeepPink
+}
+
+|User|
+start
+:Access System;
+
+|System|
+:Show Landing Page;
+
+|User|
+if (Has Account?) then (Yes)
+    :Enter Credentials;
+    |System|
+    if (Valid Credentials?) then (Yes)
+        :Create Session;
+        :Show Dashboard;
+    else (No)
+        :Show Error Message;
+        stop
+    endif
+else (No)
+    :Register New Account;
+    |System|
+    :Create User Account;
+    :Show Dashboard;
+endif
+
+while (Process New Entry?) is (Yes)
+    |User|
+    partition "Weight Entry Process" {
+        :Fill Entry Form;
+        note right
+            Required Data:
+            * Ticket Number
+            * Vehicle Number
+            * Driver Name
+            * Owner Name
+            * Entry Weight
+            * Price per KG
+        end note
+        
+        |System|
+        :Validate Entry Data;
+        :Save Entry Data;
+        :Show Entry Success;
+    }
+
+    |User|
+    partition "Weight Exit Process" {
+        :Input Exit Weight;
+        
+        |System|
+        :Calculate Weight Difference;
+        
+        if (Weight >= 1000) then (Yes)
+            :Round to Nearest 100;
+        else if (Weight >= 100) then (Yes)
+            :Round to Nearest 10;
+        else (No)
+            :Round to Whole Number;
+        endif
+        
+        :Calculate Final Values;
+        note right
+            Calculations:
+            * Net Weight
+            * Rounded Weight
+            * Rounding Off
+            * Total Price
+        end note
+        
+        :Save Calculation;
+        :Display Results;
+    }
+
+    |User|
+    partition "History View Process" {
+        :Request History;
+        
+        |System|
+        :Fetch Calculations;
+        :Display History Page;
+        
+        |User|
+        :View Calculation Details;
+    }
+endwhile (No)
+
+stop
+
+@enduml

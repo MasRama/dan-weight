@@ -1,0 +1,55 @@
+@startuml
+
+skin rose
+
+' Styling
+skinparam class {
+    BackgroundColor #FEFECE
+    BorderColor #000000
+    ArrowColor #000000
+}
+
+entity "users" {
+    *id: integer <<PK>>
+    --
+    *nama: string
+    *email: string <<unique>>
+    *password: string
+    api_key: string <<unique>>
+    created_at: timestamp
+    updated_at: timestamp
+}
+
+entity "sessions" {
+    *id: string <<PK>>
+    --
+    *user_id: integer <<FK>>
+    *token: string
+    *expires_at: timestamp
+    created_at: timestamp
+}
+
+entity "calculations" {
+    *id: integer <<PK>>
+    --
+    ticket_number: string
+    vehicle_number: string
+    driver_name: string
+    owner_name: string
+    entry_weight: decimal(10,2)
+    exit_weight: decimal(10,2)
+    price_per_kg: decimal(10,2)
+    net_weight: decimal(10,2)
+    rounded_weight: decimal(10,2)
+    rounding_off: decimal(10,2)
+    total_price: decimal(12,2)
+    entry_datetime: bigint
+    exit_datetime: bigint
+    user_id: integer <<FK>>
+    created_at: timestamp
+}
+
+users ||--o{ sessions
+users ||--o{ calculations
+
+@enduml

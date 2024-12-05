@@ -1,0 +1,88 @@
+@startuml
+
+skin rose
+
+' Styling
+skinparam class {
+    BackgroundColor #FEFECE
+    BorderColor #000000
+    ArrowColor #000000
+}
+
+class User {
+    -id: integer
+    -nama: string
+    -email: string
+    -password: string
+    -api_key: string
+    -created_at: timestamp
+    -updated_at: timestamp
+}
+
+class Session {
+    -id: string
+    -user_id: integer
+    -token: string
+    -expires_at: timestamp
+    -created_at: timestamp
+}
+
+class Calculation {
+    -id: integer
+    -ticket_number: string
+    -vehicle_number: string
+    -driver_name: string
+    -owner_name: string
+    -entry_weight: decimal
+    -exit_weight: decimal
+    -price_per_kg: decimal
+    -net_weight: decimal
+    -rounded_weight: decimal
+    -rounding_off: decimal
+    -total_price: decimal
+    -entry_datetime: bigint
+    -exit_datetime: bigint
+    -user_id: integer
+    -created_at: timestamp
+}
+
+class AuthController {
+    +login(request, response): Promise<void>
+    +processLogin(request, response): Promise<void>
+    +register(request, response): Promise<void>
+    +processRegister(request, response): Promise<void>
+    +logout(request, response): Promise<void>
+    -generateApiKey(): string
+}
+
+class CalculateController {
+    +index(request, response): Promise<void>
+    +store(request, response): Promise<void>
+    +update(request, response): Promise<void>
+    +list(request, response): Promise<void>
+    +detail(request, response): Promise<void>
+}
+
+class DB {
+    +from(table: string): QueryBuilder
+    +transaction(): Transaction
+}
+
+class ApiMiddleware {
+    +handle(request, response, next): Promise<void>
+}
+
+class AuthMiddleware {
+    +handle(request, response, next): Promise<void>
+}
+
+' Relationships
+User "1" -- "0..*" Session
+User "1" -- "0..*" Calculation
+AuthController ..> User : manages
+AuthController ..> Session : manages
+CalculateController ..> Calculation : manages
+AuthController ..> DB : uses
+CalculateController ..> DB : uses
+
+@enduml

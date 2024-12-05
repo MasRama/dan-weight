@@ -314,6 +314,14 @@
               <p class="text-gray-900">{selectedCalc.rounded_weight} kg</p>
             </div>
             <div>
+              <p class="text-sm font-medium text-gray-500">Selisih Pembulatan</p>
+              <p class="text-gray-900">{selectedCalc.net_weight - selectedCalc.rounded_weight} kg</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Harga Selisih Pembulatan</p>
+              <p class="text-gray-900">{formatCurrency((selectedCalc.net_weight - selectedCalc.rounded_weight) * selectedCalc.price_per_kg)}</p>
+            </div>
+            <div>
               <p class="text-sm font-medium text-gray-500">Harga per Kg</p>
               <p class="text-gray-900">{formatCurrency(selectedCalc.price_per_kg)}</p>
             </div>

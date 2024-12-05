@@ -1,0 +1,58 @@
+@startuml
+
+skinparam usecase {
+    BackgroundColor #FEFECE
+    BorderColor DeepPink
+    ArrowColor DeepPink
+    ActorBorderColor DeepPink
+    ActorFontColor DeepPink
+}
+
+skinparam actor {
+    BackgroundColor #FEFECE
+    BorderColor DeepPink
+}
+
+left to right direction
+
+actor "User" as user
+actor "System" as system
+
+rectangle "Weight Calculation System" {
+    usecase "Login" as UC1
+    usecase "Register" as UC2
+    usecase "Logout" as UC3
+    usecase "Input Entry Weight" as UC4
+    usecase "Input Exit Weight" as UC5
+    usecase "View Calculation History" as UC6
+    usecase "Calculate Weight Difference" as UC7
+    usecase "Calculate Total Price" as UC8
+    usecase "Manage Session" as UC9
+    usecase "Round Weight" as UC10
+    
+    ' User relationships
+    user --> UC1 : authenticates
+    user --> UC2 : registers
+    user --> UC3 : ends session
+    user --> UC4 : enters initial weight
+    user --> UC5 : enters final weight
+    user --> UC6 : views history
+
+    ' System relationships
+    UC5 ..> UC7 : includes
+    UC7 ..> UC10 : includes
+    UC10 ..> UC8 : includes
+    UC1 ..> UC9 : includes
+    
+    ' Extended relationships
+    UC4 ..> UC1 : requires
+    UC5 ..> UC1 : requires
+}
+
+note "All weights are calculated\nand rounded based on\nweight ranges" as N1
+N1 .. UC10
+
+note "Sessions are managed for\nsecurity and user tracking" as N2
+N2 .. UC9
+
+@enduml

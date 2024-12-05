@@ -1,0 +1,95 @@
+@startuml
+
+skinparam sequence {
+    ArrowColor DeepPink
+    ActorBorderColor DeepPink
+    LifeLineBorderColor DeepPink
+    LifeLineBackgroundColor #ffe4e1
+    
+    ParticipantBorderColor DeepPink
+    ParticipantBackgroundColor #ffe4e1
+    ParticipantFontColor DeepPink
+    
+    ActorBackgroundColor #ffe4e1
+    ActorFontColor DeepPink
+}
+
+title Weight Calculation System
+
+actor User
+participant Browser
+participant AuthController
+participant Session
+participant CalculateController
+participant DB
+
+== Login Process ==
+
+User -> Browser: Enter email/password
+Browser -> AuthController: POST /login
+
+AuthController -> DB: Query user by email
+DB --> AuthController: Return user data
+
+alt Invalid Credentials
+    AuthController --> Browser: Return 401 Unauthorized
+    Browser --> User: Show error message
+else Valid Credentials
+    AuthController -> DB: Delete existing sessions
+    AuthController -> Session: Create new session
+    Session --> AuthController: Return session ID
+    AuthController -> AuthController: Set session cookie
+    AuthController --> Browser: Return success response
+    Browser --> User: Redirect to dashboard
+end
+
+== Entry Weight Process ==
+
+User -> Browser: Access calculation page
+Browser -> CalculateController: GET /calculate
+CalculateController --> Browser: Return calculation form
+
+User -> Browser: Fill entry data\n(ticket, vehicle, weight, etc)
+Browser -> CalculateController: POST /calculate
+
+CalculateController -> DB: Insert calculation record
+DB --> CalculateController: Return calculation ID
+CalculateController --> Browser: Return success response
+Browser --> User: Show success message
+
+== Exit Weight & Calculation Process ==
+
+User -> Browser: Input exit weight
+Browser -> CalculateController: PUT /calculate/{id}
+
+CalculateController -> CalculateController: Calculate weight difference\n(entry_weight - exit_weight)
+
+alt Weight >= 1000
+    CalculateController -> CalculateController: roundedWeight = floor(weightDiff/100) * 100
+else Weight >= 100
+    CalculateController -> CalculateController: roundedWeight = floor(weightDiff/10) * 10
+else Weight < 100
+    CalculateController -> CalculateController: roundedWeight = floor(weightDiff)
+end
+
+CalculateController -> CalculateController: Calculate:\n- net_weight = weightDiff\n- rounding_off = weightDiff - roundedWeight\n- total_price = roundedWeight * price_per_kg
+
+CalculateController -> DB: Update calculation with:\n- exit_weight\n- net_weight\n- rounded_weight\n- rounding_off\n- total_price\n- exit_datetime
+DB --> CalculateController: Confirm update
+
+CalculateController --> Browser: Return calculation result
+Browser -> Browser: Display results:\n- Net Weight\n- Rounded Weight\n- Price per KG\n- Total Price
+Browser --> User: Show final calculation
+
+== History Process ==
+
+User -> Browser: Access history page
+Browser -> CalculateController: GET /calculate/history
+
+CalculateController -> DB: Select all calculations
+DB --> CalculateController: Return calculations list
+
+CalculateController --> Browser: Return history page with data
+Browser --> User: Display calculation history
+
+@enduml
