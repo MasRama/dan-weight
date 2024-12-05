@@ -15,7 +15,6 @@ entity "users" {
     *nama: string
     *email: string <<unique>>
     *password: string
-    api_key: string <<unique>>
     created_at: timestamp
     updated_at: timestamp
 }

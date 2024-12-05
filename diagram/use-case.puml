@@ -16,7 +16,6 @@ skinparam actor {
 left to right direction
 
 actor "User" as user
-actor "System" as system
 
 rectangle "Weight Calculation System" {
     usecase "Login" as UC1
@@ -28,7 +27,9 @@ rectangle "Weight Calculation System" {
     usecase "Calculate Weight Difference" as UC7
     usecase "Calculate Total Price" as UC8
     usecase "Manage Session" as UC9
-    usecase "Round Weight" as UC10
+    usecase "Round Entry Weight" as UC10
+    usecase "Round Exit Weight" as UC11
+    usecase "Round Weight Difference" as UC12
     
     ' User relationships
     user --> UC1 : authenticates
@@ -39,9 +40,11 @@ rectangle "Weight Calculation System" {
     user --> UC6 : views history
 
     ' System relationships
+    UC4 ..> UC10 : includes
+    UC5 ..> UC11 : includes
     UC5 ..> UC7 : includes
-    UC7 ..> UC10 : includes
-    UC10 ..> UC8 : includes
+    UC7 ..> UC12 : includes
+    UC12 ..> UC8 : includes
     UC1 ..> UC9 : includes
     
     ' Extended relationships
@@ -49,10 +52,14 @@ rectangle "Weight Calculation System" {
     UC5 ..> UC1 : requires
 }
 
-note "All weights are calculated\nand rounded based on\nweight ranges" as N1
+note "Entry and Exit weights\nare rounded to nearest 10" as N1
 N1 .. UC10
+N1 .. UC11
 
-note "Sessions are managed for\nsecurity and user tracking" as N2
-N2 .. UC9
+note "Weight difference rounding:\n- ≥1000: round to 100\n- ≥100: round to 10\n- <100: round to whole" as N2
+N2 .. UC12
+
+note "Sessions are managed for\nsecurity and user tracking" as N3
+N3 .. UC9
 
 @enduml

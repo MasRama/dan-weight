@@ -40,23 +40,41 @@ while (Continue process?) is (yes)
         - Price per kg
     end note
     
+    :Round entry weight to nearest 10;
+    note right
+        remainder = weight % 10
+        if remainder >= 5
+            weight + (10 - remainder)
+        else
+            weight - remainder
+    end note
+    
     :Save entry data;
     
     :Wait for exit weight;
     
     :Input exit weight;
     
-    :Calculate weight difference;
+    :Round exit weight to nearest 10;
     note right
-        entry_weight - exit_weight
+        remainder = weight % 10
+        if remainder >= 5
+            weight + (10 - remainder)
+        else
+            weight - remainder
     end note
     
-    if (weight >= 1000) then (yes)
+    :Calculate weight difference;
+    note right
+        rounded_entry - rounded_exit
+    end note
+    
+    if (Weight difference >= 1000?) then (yes)
         :Round to nearest 100;
         note right
             floor(weight/100) * 100
         end note
-    else if (weight >= 100) then (yes)
+    else if (Weight difference >= 100?) then (yes)
         :Round to nearest 10;
         note right
             floor(weight/10) * 10
@@ -68,12 +86,9 @@ while (Continue process?) is (yes)
         end note
     endif
     
-    :Calculate final values;
+    :Calculate total price;
     note right
-        - Net weight
-        - Rounded weight
-        - Rounding off
-        - Total price
+        rounded_weight * price_per_kg
     end note
     
     :Save calculation;

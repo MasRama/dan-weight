@@ -6,7 +6,6 @@ import AuthController from "../app/controllers/AuthController";
 import CalculateController from "../app/controllers/CalculateController";
 
 import AuthMiddleware from "../app/middlewares/AuthMiddleware";
-import ApiMiddleware from "../app/middlewares/ApiMiddleware";
 
 Route.get('/', HomeController.index)
 

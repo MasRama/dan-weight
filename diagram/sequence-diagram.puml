@@ -52,7 +52,9 @@ CalculateController --> Browser: Return calculation form
 User -> Browser: Fill entry data\n(ticket, vehicle, weight, etc)
 Browser -> CalculateController: POST /calculate
 
-CalculateController -> DB: Insert calculation record
+CalculateController -> CalculateController: Round entry weight to nearest 10\n(roundToNearest10)
+
+CalculateController -> DB: Insert calculation record with rounded entry weight
 DB --> CalculateController: Return calculation ID
 CalculateController --> Browser: Return success response
 Browser --> User: Show success message
@@ -62,23 +64,24 @@ Browser --> User: Show success message
 User -> Browser: Input exit weight
 Browser -> CalculateController: PUT /calculate/{id}
 
-CalculateController -> CalculateController: Calculate weight difference\n(entry_weight - exit_weight)
+CalculateController -> CalculateController: Round exit weight to nearest 10\n(roundToNearest10)
+CalculateController -> CalculateController: Calculate weight difference\n(rounded_entry - rounded_exit)
 
-alt Weight >= 1000
+alt Weight Difference >= 1000
     CalculateController -> CalculateController: roundedWeight = floor(weightDiff/100) * 100
-else Weight >= 100
+else Weight Difference >= 100
     CalculateController -> CalculateController: roundedWeight = floor(weightDiff/10) * 10
-else Weight < 100
+else Weight Difference < 100
     CalculateController -> CalculateController: roundedWeight = floor(weightDiff)
 end
 
-CalculateController -> CalculateController: Calculate:\n- net_weight = weightDiff\n- rounding_off = weightDiff - roundedWeight\n- total_price = roundedWeight * price_per_kg
+CalculateController -> CalculateController: Calculate total price\n(roundedWeight * price_per_kg)
 
-CalculateController -> DB: Update calculation with:\n- exit_weight\n- net_weight\n- rounded_weight\n- rounding_off\n- total_price\n- exit_datetime
+CalculateController -> DB: Update calculation with:\n- rounded_exit_weight\n- weight_difference\n- rounded_weight\n- total_price\n- exit_datetime
 DB --> CalculateController: Confirm update
 
 CalculateController --> Browser: Return calculation result
-Browser -> Browser: Display results:\n- Net Weight\n- Rounded Weight\n- Price per KG\n- Total Price
+Browser -> Browser: Display results:\n- Weight Difference\n- Rounded Weight\n- Price per KG\n- Total Price
 Browser --> User: Show final calculation
 
 == History Process ==

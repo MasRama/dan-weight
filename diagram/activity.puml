@@ -51,36 +51,35 @@ while (Process New Entry?) is (Yes)
         
         |System|
         :Validate Entry Data;
+        :Round Entry Weight to Nearest 10;
         :Save Entry Data;
         :Show Entry Success;
     }
 
     |User|
     partition "Weight Exit Process" {
-        :Input Exit Weight;
-        
-        |System|
-        :Calculate Weight Difference;
-        
-        if (Weight >= 1000) then (Yes)
-            :Round to Nearest 100;
-        else if (Weight >= 100) then (Yes)
-            :Round to Nearest 10;
-        else (No)
-            :Round to Whole Number;
-        endif
-        
-        :Calculate Final Values;
+        :Fill Exit Form;
         note right
-            Calculations:
-            * Net Weight
-            * Rounded Weight
-            * Rounding Off
-            * Total Price
+            Required Data:
+            * Exit Weight
         end note
         
-        :Save Calculation;
-        :Display Results;
+        |System|
+        :Round Exit Weight to Nearest 10;
+        :Calculate Weight Difference;
+        
+        if (Weight Difference >= 1000) then (Yes)
+            :Round to Nearest 100;
+        else (No)
+            if (Weight Difference >= 100) then (Yes)
+                :Round to Nearest 10;
+            else (No)
+                :Round to Nearest Whole Number;
+            endif
+        endif
+        
+        :Calculate Total Price;
+        :Save Exit Data;
     }
 
     |User|
@@ -94,6 +93,9 @@ while (Process New Entry?) is (Yes)
         |User|
         :View Calculation Details;
     }
+    
+    |User|
+    :Review Results;
 endwhile (No)
 
 stop

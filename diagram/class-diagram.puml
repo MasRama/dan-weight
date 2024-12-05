@@ -14,7 +14,7 @@ class User {
     -nama: string
     -email: string
     -password: string
-    -api_key: string
+    
     -created_at: timestamp
     -updated_at: timestamp
 }
@@ -44,6 +44,8 @@ class Calculation {
     -exit_datetime: bigint
     -user_id: integer
     -created_at: timestamp
+    +roundWeights(): void
+    +calculateTotalPrice(): void
 }
 
 class AuthController {
@@ -52,7 +54,7 @@ class AuthController {
     +register(request, response): Promise<void>
     +processRegister(request, response): Promise<void>
     +logout(request, response): Promise<void>
-    -generateApiKey(): string
+    
 }
 
 class CalculateController {
@@ -61,6 +63,18 @@ class CalculateController {
     +update(request, response): Promise<void>
     +list(request, response): Promise<void>
     +detail(request, response): Promise<void>
+    -roundToNearest10(value: number): number
+    -calculateRoundedWeight(weightDiff: number): number
+}
+
+class WeightCalculator {
+    -weightDifference: number
+    -roundedWeight: number
+    -roundingOff: number
+    -totalPrice: number
+    +roundToNearest10(value: number): number
+    +calculateWeight(entryWeight: number, exitWeight: number, pricePerKg: number): void
+    -roundByRange(weightDiff: number): number
 }
 
 class DB {
@@ -68,9 +82,7 @@ class DB {
     +transaction(): Transaction
 }
 
-class ApiMiddleware {
-    +handle(request, response, next): Promise<void>
-}
+
 
 class AuthMiddleware {
     +handle(request, response, next): Promise<void>
@@ -82,6 +94,8 @@ User "1" -- "0..*" Calculation
 AuthController ..> User : manages
 AuthController ..> Session : manages
 CalculateController ..> Calculation : manages
+CalculateController ..> WeightCalculator : uses
+WeightCalculator ..> Calculation : calculates
 AuthController ..> DB : uses
 CalculateController ..> DB : uses
 
