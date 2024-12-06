@@ -15,7 +15,7 @@ Route.get('/dashboard', HomeController.dashboard)
 Route.get('/dashboard/calculate', CalculateController.index)
 Route.get('/dashboard/calculate/history', CalculateController.historyPage)
 
-// Route.use('/api', ApiMiddleware)
+
 Route.post('/api/calculate', CalculateController.store)
 Route.get('/api/calculations', CalculateController.history)
 Route.post('/api/calculations/edit', CalculateController.edit)
