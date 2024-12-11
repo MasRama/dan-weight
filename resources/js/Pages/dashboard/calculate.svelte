@@ -106,6 +106,9 @@
 
         if (response.data.success) {
           Toast('Data berhasil disimpan', "success");
+          // Save current price per kg
+          const currentPricePerKg = formData.pricePerKg;
+          
           // Reset form after successful save
           formData = {
             ticketNumber: '',
@@ -114,7 +117,7 @@
             ownerName: '',
             entryWeight: '',
             exitWeight: null,
-            pricePerKg: '',
+            pricePerKg: currentPricePerKg, // Keep the price per kg value
             entryDateTime: new Date().toLocaleDateString('id-ID', {
               day: '2-digit',
               month: '2-digit', 
@@ -122,6 +125,7 @@
             }).split('/').join('-'),
             exitDateTime: null
           };
+          
           // Refresh the calculation history
           if (calculateHistoryComponent) {
             await calculateHistoryComponent.refreshData();
