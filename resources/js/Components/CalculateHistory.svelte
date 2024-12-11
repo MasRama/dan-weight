@@ -10,6 +10,8 @@
     let selectedCalc = null;
     let showEditModal = false;
     let editingCalc = null;
+    let showInvoiceModal = false;
+    let selectedInvoice = null;
 
     function roundToNearest10(value) {
       const remainder = value % 10;
@@ -165,7 +167,55 @@
 
     // Reactive statement to calculate totals when filteredCalculations changes
     $: totals = calculateTotals(filteredCalculations);
+
+    const generateInvoice = (calc) => {
+      selectedInvoice = calc;
+      showInvoiceModal = true;
+    };
+
+    // Format tanggal lengkap
+    const formatFullDate = (timestamp) => {
+      if (!timestamp || isNaN(timestamp)) {
+        return "Belum ditentukan";
+      }
+      const date = new Date(parseInt(timestamp));
+      return date.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    };
 </script>
+
+<style>
+  @media print {
+    /* Hide everything except the invoice modal */
+    body > *:not(.invoice-modal) {
+      display: none !important;
+    }
+    
+    /* Remove background colors and shadows for better printing */
+    .invoice-modal {
+      background: white !important;
+      box-shadow: none !important;
+    }
+    
+    /* Hide the close and print buttons when printing */
+    .invoice-modal button {
+      display: none !important;
+    }
+    
+    /* Ensure the invoice takes up the full page */
+    .invoice-modal {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      padding: 2cm !important;
+    }
+  }
+</style>
 
 <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
   <div class="mb-8">
@@ -323,6 +373,11 @@
                     on:click={() => openEditModal(calc)}
                     class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition-colors mr-2">
                     Edit
+                  </button>
+                  <button 
+                    on:click={() => generateInvoice(calc)}
+                    class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-sm transition-colors mr-2">
+                    Invoice
                   </button>
                   {#if calc.exit_weight}
                     <span class="inline-flex items-center justify-center w-6 h-6 bg-green-50 text-green-500 rounded-full">
@@ -516,6 +571,137 @@
           on:click={handleEdit}
           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">
           Simpan
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showInvoiceModal && selectedInvoice}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg w-full max-w-4xl p-8">
+      <!-- Invoice Header -->
+      <div class="flex justify-between items-start mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">INVOICE</h1>
+          <p class="text-gray-600 mt-1">No. Tiket: {selectedInvoice.ticket_number}</p>
+        </div>
+        <button 
+          on:click={() => showInvoiceModal = false}
+          class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Company & Customer Info -->
+      <div class="grid grid-cols-2 gap-8 mb-8">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">Dari:</h2>
+          <div class="text-gray-600">
+            <p class="font-bold text-xl">PT. Timbangan Digital</p>
+            <p>Jl. Raya Utama No. 123</p>
+            <p>Jakarta Selatan, 12345</p>
+            <p>Telp: (021) 123-4567</p>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">Kepada:</h2>
+          <div class="text-gray-600">
+            <p class="font-bold">{selectedInvoice.owner_name}</p>
+            <p>Sopir: {selectedInvoice.driver_name}</p>
+            <p>No. Kendaraan: {selectedInvoice.vehicle_number}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Details -->
+      <div class="border rounded-lg overflow-hidden mb-8">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Harga/Kg</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr>
+              <td class="px-6 py-4 text-sm text-gray-900">
+                Berat Kotor
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900 text-right">
+                {selectedInvoice.entry_weight} kg
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500 text-right">
+                -
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500 text-right">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-sm text-gray-900">
+                Berat Bersih
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900 text-right">
+                {selectedInvoice.rounded_weight} kg
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900 text-right">
+                {formatCurrency(selectedInvoice.price_per_kg)}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900 text-right font-medium">
+                {formatCurrency(selectedInvoice.total_price)}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot class="bg-gray-50">
+            <tr>
+              <th scope="row" colspan="3" class="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                Total
+              </th>
+              <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                {formatCurrency(selectedInvoice.total_price)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="grid grid-cols-2 gap-8 mb-8">
+        <div>
+          <h3 class="text-sm font-medium text-gray-900 mb-2">Informasi Transaksi:</h3>
+          <div class="text-sm text-gray-600">
+            <p>Tanggal Masuk: {formatFullDate(selectedInvoice.entry_datetime)}</p>
+            <p>Tanggal Keluar: {formatFullDate(selectedInvoice.exit_datetime)}</p>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-900 mb-2">Catatan:</h3>
+          <p class="text-sm text-gray-600">
+            Pembayaran dilakukan secara tunai atau transfer bank.
+            Harap simpan invoice ini sebagai bukti transaksi yang sah.
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end space-x-3">
+        <button 
+          on:click={() => showInvoiceModal = false}
+          class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md transition-colors">
+          Tutup
+        </button>
+        <button 
+          on:click={() => window.print()}
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Cetak Invoice
         </button>
       </div>
     </div>
