@@ -143,12 +143,97 @@
     });
 
     export { refreshData };
+
+    // Add new function to calculate totals
+    function calculateTotals(transactions) {
+      return transactions.reduce((acc, curr) => {
+        return {
+          totalTransactions: acc.totalTransactions + 1,
+          totalWeight: acc.totalWeight + (curr.rounded_weight || 0),
+          totalAmount: acc.totalAmount + (curr.total_price || 0),
+          completedTransactions: acc.completedTransactions + (curr.exit_weight ? 1 : 0),
+          pendingTransactions: acc.pendingTransactions + (curr.exit_weight ? 0 : 1)
+        };
+      }, {
+        totalTransactions: 0,
+        totalWeight: 0,
+        totalAmount: 0,
+        completedTransactions: 0,
+        pendingTransactions: 0
+      });
+    }
+
+    // Reactive statement to calculate totals when filteredCalculations changes
+    $: totals = calculateTotals(filteredCalculations);
 </script>
 
 <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
   <div class="mb-8">
     <h2 class="text-2xl font-bold text-gray-800">Riwayat Kalkulasi</h2>
     <p class="text-gray-600">Catatan seluruh transaksi penimbangan</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-blue-600">Total Transaksi</p>
+          <div class="mt-2 flex items-baseline">
+            <p class="text-2xl font-semibold text-blue-900">{totals.totalTransactions}</p>
+            <p class="ml-2 text-sm text-blue-600">transaksi</p>
+          </div>
+          <div class="mt-1 text-xs text-blue-600">
+            <span class="font-medium">{totals.completedTransactions}</span> selesai,
+            <span class="font-medium">{totals.pendingTransactions}</span> pending
+          </div>
+        </div>
+        <div class="p-3 bg-blue-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-green-600">Total Berat</p>
+          <div class="mt-2 flex items-baseline">
+            <p class="text-2xl font-semibold text-green-900">{totals.totalWeight.toLocaleString()}</p>
+            <p class="ml-2 text-sm text-green-600">kg</p>
+          </div>
+          <div class="mt-1 text-xs text-green-600">
+            Berat total dari semua transaksi
+          </div>
+        </div>
+        <div class="p-3 bg-green-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-purple-600">Total Pendapatan</p>
+          <div class="mt-2 flex items-baseline">
+            <p class="text-2xl font-semibold text-purple-900">{formatCurrency(totals.totalAmount)}</p>
+          </div>
+          <div class="mt-1 text-xs text-purple-600">
+            Total nilai dari semua transaksi
+          </div>
+        </div>
+        <div class="p-3 bg-purple-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Search and Filter Section -->
