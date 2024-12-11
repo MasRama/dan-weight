@@ -10,6 +10,8 @@
   
     let calculateHistoryComponent;
 
+    let selectedType = ''; // Will store either 'truk' or 'gandengan'
+
     let formData = {
       ticketNumber: '',
       vehicleNumber: '',
@@ -19,7 +21,8 @@
       exitWeight: null,
       pricePerKg: '',
       entryDateTime: Date.now(),
-      exitDateTime: null
+      exitDateTime: null,
+      types: ''
     };
 
   
@@ -86,28 +89,44 @@
       };
     }
   
+    function selectVehicleType(type) {
+      selectedType = type;
+      formData = { ...formData, types: type };
+    }
+
     async function handleSubmit() {
+      if (!formData.types) {
+        Toast('Pilih jenis kendaraan terlebih dahulu', "error");
+        return;
+      }
       try {
         const entryWeight = unformatNumber(formData.entryWeight);
         const roundedEntryWeight = roundToNearest10(entryWeight);
         
-        const response = await axios.post('/api/calculate', {
-            ticketNumber: formData.ticketNumber,
-            vehicleNumber: formData.vehicleNumber,
-            driverName: formData.driverName, 
-            ownerName: formData.ownerName,
-            entryWeight: roundedEntryWeight,
-            exitWeight: null,
-            pricePerKg: unformatNumber(formData.pricePerKg),
-            entryDateTime: formData.entryDateTime,
-            exitDateTime: null,
-            userId: user.id
-        });
+        const payload = {
+          ticketNumber: formData.ticketNumber,
+          vehicleNumber: formData.vehicleNumber,
+          driverName: formData.driverName, 
+          ownerName: formData.ownerName,
+          entryWeight: roundedEntryWeight,
+          exitWeight: null,
+          pricePerKg: unformatNumber(formData.pricePerKg),
+          entryDateTime: formData.entryDateTime,
+          exitDateTime: null,
+          types: selectedType,
+          userId: user.id
+        };
+        
+        console.log('Submitting payload:', payload); // Debug full payload
+        
+        const response = await axios.post('/api/calculate', payload);
+        console.log('Response:', response.data); // Debug response
 
         if (response.data.success) {
           Toast('Data berhasil disimpan', "success");
-          // Save current price per kg
+          // Save current values
           const currentPricePerKg = formData.pricePerKg;
+          const currentType = selectedType; // Save current type
           
           // Reset form after successful save
           formData = {
@@ -117,14 +136,16 @@
             ownerName: '',
             entryWeight: '',
             exitWeight: null,
-            pricePerKg: currentPricePerKg, // Keep the price per kg value
+            pricePerKg: currentPricePerKg,
             entryDateTime: new Date().toLocaleDateString('id-ID', {
               day: '2-digit',
               month: '2-digit', 
               year: 'numeric'
             }).split('/').join('-'),
-            exitDateTime: null
+            exitDateTime: null,
+            types: currentType // Use saved type
           };
+          selectedType = currentType; // Keep the selected type
           
           // Refresh the calculation history
           if (calculateHistoryComponent) {
@@ -145,6 +166,40 @@
           <h1 class="text-4xl font-bold text-gray-900">{title}</h1>
           <p class="mt-3 text-lg text-gray-600">{description}</p>
         </div>        
+        
+        <!-- Vehicle Type Selection -->
+        <div class="mb-8 max-w-2xl mx-auto">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Pilih Jenis Kendaraan:</h2>
+          <div class="flex gap-4">
+            <button
+              type="button"
+              class="flex-1 py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 {selectedType === 'truk' ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
+              on:click={() => selectVehicleType('truk')}
+            >
+              <div class="flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                </svg>
+                Truk
+              </div>
+            </button>
+            
+            <button
+              type="button"
+              class="flex-1 py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 {selectedType === 'gandengan' ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
+              on:click={() => selectVehicleType('gandengan')}
+            >
+              <div class="flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                </svg>
+                Gandengan
+              </div>
+            </button>
+          </div>
+        </div>
         
         <form on:submit|preventDefault={handleSubmit} class="space-y-8">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

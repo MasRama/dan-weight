@@ -27,7 +27,8 @@ class Controller {
             total_price: 0,
             entry_datetime: body.entryDateTime,
             exit_datetime: null,
-            user_id: body.userId
+            user_id: body.userId,
+            types: body.types
         };
 
         const [id] = await DB('calculations').insert(calculation);
@@ -84,7 +85,8 @@ public async edit(request, response) {
         total_price: roundedWeight * body.pricePerKg,
         entry_datetime: body.entryDateTime,
         exit_datetime: Date.now(),
-        user_id: body.userId
+        user_id: body.userId,
+        types: body.types
       };
   
       await DB('calculations').where('id', id).update(calculation);

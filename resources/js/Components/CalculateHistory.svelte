@@ -357,6 +357,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tiket</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sopir</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berat Bersih</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -369,6 +370,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{calc.ticket_number}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.vehicle_number}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.driver_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.types || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.rounded_weight} kg</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(calc.total_price)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(calc.entry_datetime)}</td>
@@ -484,6 +486,10 @@
           <p class="text-sm font-medium text-gray-500">Waktu Keluar</p>
           <p class="text-gray-900">{formatDate(selectedCalc.exit_datetime)}</p>
         </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Jenis Kendaraan</p>
+          <p class="text-gray-900">{selectedCalc.types || '-'}</p>
+        </div>
       </div>
 
       <div class="mt-6 flex justify-end">
@@ -568,6 +574,14 @@
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Jenis Kendaraan</label>
+          <input 
+            type="text"
+            bind:value={editingCalc.types}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
       <div class="mt-6 flex justify-end space-x-3">
@@ -621,6 +635,7 @@
             <p class="font-bold">{selectedInvoice.owner_name}</p>
             <p>Sopir: {selectedInvoice.driver_name}</p>
             <p>No. Kendaraan: {selectedInvoice.vehicle_number}</p>
+            <p>Jenis Kendaraan: {selectedInvoice.types || '-'}</p>
           </div>
         </div>
       </div>
