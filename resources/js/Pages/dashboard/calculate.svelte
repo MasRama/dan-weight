@@ -8,6 +8,8 @@
     export let title;
     export let description;
   
+    let calculateHistoryComponent;
+
     let formData = {
       ticketNumber: '',
       vehicleNumber: '',
@@ -120,6 +122,10 @@
             }).split('/').join('-'),
             exitDateTime: null
           };
+          // Refresh the calculation history
+          if (calculateHistoryComponent) {
+            await calculateHistoryComponent.refreshData();
+          }
         }
       } catch (error) {
         Toast('Gagal menyimpan data', "error");
@@ -245,6 +251,8 @@
         </form>
       </div>
 
-      <CalculateHistory />
+      <CalculateHistory 
+        bind:this={calculateHistoryComponent}
+      />
     </div>
   </GlobalLayout>

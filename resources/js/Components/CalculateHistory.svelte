@@ -118,12 +118,22 @@
       showModal = true;
     };
     
+    async function refreshData() {
+      try {
+        const response = await axios.get("/api/calculations");
+        calculations = response.data.data;
+        filteredCalculations = calculations;
+      } catch (error) {
+        console.error("Failed to fetch calculations:", error);
+        Toast("Gagal mengambil data", "error");
+      }
+    }
+
     onMount(async () => {
       try {
         const response = await axios.get("/api/calculations");
         calculations = response.data.data;
         filteredCalculations = calculations;
-        
       } catch (error) {
         console.error("Failed to fetch calculations:", error);
         Toast("Gagal mengambil data", "error");
@@ -131,6 +141,8 @@
         loading = false;
       }
     });
+
+    export { refreshData };
 </script>
 
 <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
