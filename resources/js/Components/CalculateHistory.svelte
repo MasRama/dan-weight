@@ -173,18 +173,27 @@
       showInvoiceModal = true;
     };
 
-    // Format tanggal lengkap
+    // Format tanggal dan waktu lengkap
     const formatFullDate = (timestamp) => {
       if (!timestamp || isNaN(timestamp)) {
         return "Belum ditentukan";
       }
       const date = new Date(parseInt(timestamp));
-      return date.toLocaleDateString('id-ID', {
+      const hari = date.toLocaleDateString('id-ID', {
         weekday: 'long',
-        year: 'numeric',
+        day: 'numeric',
         month: 'long',
-        day: 'numeric'
+        year: 'numeric'
       });
+      
+      const waktu = date.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      
+      return `${hari} - ${waktu} WIB`;
     };
 </script>
 
