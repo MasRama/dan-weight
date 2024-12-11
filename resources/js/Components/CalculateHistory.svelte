@@ -81,6 +81,7 @@
         }
       } catch (error) {
         console.error("Failed to update calculation:", error);
+        Toast("Gagal mengupdate data", "error");
       }
     };
 
@@ -125,6 +126,7 @@
         
       } catch (error) {
         console.error("Failed to fetch calculations:", error);
+        Toast("Gagal mengambil data", "error");
       } finally {
         loading = false;
       }
@@ -227,7 +229,7 @@
                   </button>
                   {#if calc.exit_weight}
                     <span class="inline-flex items-center justify-center w-6 h-6 bg-green-50 text-green-500 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 ">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                           </svg>
                           
@@ -249,3 +251,176 @@
     </div>
   {/if}
 </div> 
+
+{#if showModal && selectedCalc}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-2xl w-full p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Detail Transaksi</h2>
+        <button 
+          on:click={() => showModal = false}
+          class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm font-medium text-gray-500">No. Tiket</p>
+          <p class="text-gray-900">{selectedCalc.ticket_number}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Kendaraan</p>
+          <p class="text-gray-900">{selectedCalc.vehicle_number}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Nama Sopir</p>
+          <p class="text-gray-900">{selectedCalc.driver_name}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Nama Pemilik</p>
+          <p class="text-gray-900">{selectedCalc.owner_name}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Berat Masuk</p>
+          <p class="text-gray-900">{selectedCalc.entry_weight} kg</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Berat Keluar</p>
+          <p class="text-gray-900">{selectedCalc.exit_weight ? `${selectedCalc.exit_weight} kg` : 'Belum ditentukan'}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Berat Bersih</p>
+          <p class="text-gray-900">{selectedCalc.net_weight} kg</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Berat Dibulatkan</p>
+          <p class="text-gray-900">{selectedCalc.rounded_weight} kg</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Selisih Pembulatan</p>
+          <p class="text-gray-900">{selectedCalc.net_weight - selectedCalc.rounded_weight} kg</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Harga Selisih Pembulatan</p>
+          <p class="text-gray-900">{formatCurrency((selectedCalc.net_weight - selectedCalc.rounded_weight) * selectedCalc.price_per_kg)}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Harga per Kg</p>
+          <p class="text-gray-900">{formatCurrency(selectedCalc.price_per_kg)}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Total Harga</p>
+          <p class="text-gray-900">{formatCurrency(selectedCalc.total_price)}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Waktu Masuk</p>
+          <p class="text-gray-900">{formatDate(selectedCalc.entry_datetime)}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Waktu Keluar</p>
+          <p class="text-gray-900">{formatDate(selectedCalc.exit_datetime)}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button 
+          on:click={() => showModal = false}
+          class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md transition-colors">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showEditModal && editingCalc}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-2xl w-full p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Edit Transaksi</h2>
+        <button 
+          on:click={() => showEditModal = false}
+          class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">No. Tiket</label>
+          <input 
+            type="text"
+            bind:value={editingCalc.ticket_number}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Kendaraan</label>
+          <input 
+            type="text"
+            bind:value={editingCalc.vehicle_number}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nama Sopir</label>
+          <input 
+            type="text"
+            bind:value={editingCalc.driver_name}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nama Pemilik</label>
+          <input 
+            type="text"
+            bind:value={editingCalc.owner_name}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Berat Masuk (kg)</label>
+          <input 
+            type="number"
+            bind:value={editingCalc.entry_weight}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Berat Keluar (kg)</label>
+          <input 
+            type="number"
+            bind:value={editingCalc.exit_weight}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Harga per Kg</label>
+          <input 
+            type="number"
+            bind:value={editingCalc.price_per_kg}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end space-x-3">
+        <button 
+          on:click={() => showEditModal = false}
+          class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md transition-colors">
+          Batal
+        </button>
+        <button 
+          on:click={handleEdit}
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">
+          Simpan
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
