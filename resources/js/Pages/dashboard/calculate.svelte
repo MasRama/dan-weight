@@ -10,7 +10,7 @@
   
     let calculateHistoryComponent;
 
-    let selectedType = ''; // Will store either 'truk' or 'gandengan'
+    let selectedType = ''; // Will store either 'truk' or 'gandengan' types
 
     let formData = {
       ticketNumber: '',
