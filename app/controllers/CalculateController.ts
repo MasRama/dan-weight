@@ -16,7 +16,7 @@ class Controller {
         // Calculate weights
         const entryWeight = body.entryWeight;
         const exitWeight = body.exitWeight;
-        const weightDiff = entryWeight - exitWeight;
+        const weightDiff = exitWeight;
         let roundedWeight;
 
         if (weightDiff >= 1000) {
