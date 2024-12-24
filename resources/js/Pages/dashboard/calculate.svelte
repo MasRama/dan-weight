@@ -109,21 +109,23 @@
       }
       try {
         const entryWeight = unformatNumber(formData.entryWeight);
-        const roundedEntryWeight = roundToNearest10(entryWeight);
+        const vehicleWeight = parseInt(formData.vehicleWeight) || 0;
+        const exitWeight = entryWeight - vehicleWeight;
+        const roundedExitWeight = roundToNearest10(exitWeight);
         
         const payload = {
           ticketNumber: formData.ticketNumber,
           vehicleNumber: formData.vehicleNumber,
           driverName: formData.driverName, 
           ownerName: formData.ownerName,
-          entryWeight: roundedEntryWeight,
-          exitWeight: null,
+          entryWeight: entryWeight,
+          exitWeight: roundedExitWeight,
           pricePerKg: unformatNumber(formData.pricePerKg),
           entryDateTime: formData.entryDateTime,
           exitDateTime: null,
           types: selectedType,
           userId: user.id,
-          vehicleWeight: parseInt(formData.vehicleWeight),
+          vehicleWeight: vehicleWeight,
         };
         
         console.log('Submitting payload:', payload); // Debug full payload
@@ -146,11 +148,7 @@
             entryWeight: '',
             exitWeight: null,
             pricePerKg: currentPricePerKg,
-            entryDateTime: new Date().toLocaleDateString('id-ID', {
-              day: '2-digit',
-              month: '2-digit', 
-              year: 'numeric'
-            }).split('/').join('-'),
+            entryDateTime: Date.now(),
             exitDateTime: null,
             types: currentType, // Use saved type
             vehicleWeight: ''

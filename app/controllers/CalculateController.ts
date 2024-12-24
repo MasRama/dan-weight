@@ -13,20 +13,34 @@ class Controller {
     try {
         const body = await request.json();
 
+        // Calculate weights
+        const entryWeight = body.entryWeight;
+        const exitWeight = body.exitWeight;
+        const weightDiff = entryWeight - exitWeight;
+        let roundedWeight;
+
+        if (weightDiff >= 1000) {
+            roundedWeight = Math.floor(weightDiff / 100) * 100;
+        } else if (weightDiff >= 100) {
+            roundedWeight = Math.floor(weightDiff / 10) * 10;
+        } else {
+            roundedWeight = Math.floor(weightDiff);
+        }
+
         const calculation = {
             ticket_number: body.ticketNumber,
             vehicle_number: body.vehicleNumber,
             driver_name: body.driverName,
             owner_name: body.ownerName,
-            entry_weight: body.entryWeight,
-            exit_weight: null,
+            entry_weight: entryWeight,
+            exit_weight: exitWeight,
             price_per_kg: body.pricePerKg,
-            net_weight: 0,
-            rounded_weight: 0,
-            rounding_off: 0,
-            total_price: 0,
-            entry_datetime: body.entryDateTime,
-            exit_datetime: null,
+            net_weight: weightDiff,
+            rounded_weight: roundedWeight,
+            rounding_off: weightDiff - roundedWeight,
+            total_price: roundedWeight * body.pricePerKg,
+            entry_datetime: body.entryDateTime || Date.now(),
+            exit_datetime: body.exitDateTime,
             user_id: body.userId,
             types: body.types
         };
