@@ -199,8 +199,7 @@
 
 <style>
   @media print {
-    /* Hide everything except the invoice modal */
-    body > *:not(.invoice-modal) {
+    :global(body > *:not(.invoice-modal)) {
       display: none !important;
     }
     
@@ -299,8 +298,9 @@
   <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Cari Berdasarkan</label>
+        <label for="filterBy" class="block text-sm font-medium text-gray-700 mb-1">Cari Berdasarkan</label>
         <select 
+          id="filterBy"
           bind:value={filterBy}
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
           {#each filterOptions as option}
@@ -310,8 +310,9 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Kata Kunci</label>
+        <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Kata Kunci</label>
         <input 
+          id="searchInput"
           type="text"
           bind:value={searchQuery}
           placeholder="Cari..."
@@ -320,8 +321,9 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+        <label for="dateFrom" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
         <input 
+          id="dateFrom"
           type="date"
           bind:value={dateFrom}
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -329,8 +331,9 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+        <label for="dateTo" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
         <input 
+          id="dateTo"
           type="date"
           bind:value={dateTo}
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -519,7 +522,7 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700">No. Tiket</label>
+          <label for="ticket_number" class="block text-sm font-medium text-gray-700">No. Tiket</label>
           <input 
             type="text"
             bind:value={editingCalc.ticket_number}
@@ -527,7 +530,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Kendaraan</label>
+          <label for="vehicle_number" class="block text-sm font-medium text-gray-700">Kendaraan</label>
           <input 
             type="text"
             bind:value={editingCalc.vehicle_number}
@@ -535,7 +538,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Nama Sopir</label>
+          <label for="driver_name" class="block text-sm font-medium text-gray-700">Nama Sopir</label>
           <input 
             type="text"
             bind:value={editingCalc.driver_name}
@@ -543,7 +546,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Nama Pemilik</label>
+          <label for="owner_name" class="block text-sm font-medium text-gray-700">Nama Pemilik</label>
           <input 
             type="text"
             bind:value={editingCalc.owner_name}
@@ -551,7 +554,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Berat Masuk (kg)</label>
+          <label for="entry_weight" class="block text-sm font-medium text-gray-700">Berat Masuk (kg)</label>
           <input 
             type="number"
             bind:value={editingCalc.entry_weight}
@@ -559,7 +562,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Berat Keluar (kg)</label>
+          <label for="exit_weight" class="block text-sm font-medium text-gray-700">Berat Keluar (kg)</label>
           <input 
             type="number"
             bind:value={editingCalc.exit_weight}
@@ -567,7 +570,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Harga per Kg</label>
+          <label for="price_per_kg" class="block text-sm font-medium text-gray-700">Harga per Kg</label>
           <input 
             type="number"
             bind:value={editingCalc.price_per_kg}
@@ -575,7 +578,7 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Jenis Kendaraan</label>
+          <label for="types" class="block text-sm font-medium text-gray-700">Jenis Kendaraan</label>
           <input 
             type="text"
             bind:value={editingCalc.types}
@@ -602,7 +605,7 @@
 
 {#if showInvoiceModal && selectedInvoice}
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg w-full max-w-4xl p-8">
+    <div class="invoice-modal bg-white rounded-lg w-full max-w-4xl p-8">
       <!-- Invoice Header -->
       <div class="flex justify-between items-start mb-8">
         <div>

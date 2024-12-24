@@ -12,6 +12,12 @@
 
     let selectedType = ''; // Will store either 'truk' or 'gandengan' types vehicle
 
+    // Add vehicle weight options
+    const vehicleWeightOptions = [
+      { value: 3500, label: '3.500 KG' },
+      { value: 4000, label: '4.000 KG' }
+    ];
+
     let formData = {
       ticketNumber: '',
       vehicleNumber: '',
@@ -22,7 +28,8 @@
       pricePerKg: '',
       entryDateTime: Date.now(),
       exitDateTime: null,
-      types: ''
+      types: '',
+      vehicleWeight: '' // Add new field
     };
 
   
@@ -66,13 +73,14 @@
   
     function calculateWeight() {
       const entryWeight = unformatNumber(formData.entryWeight);
-      const exitWeight = unformatNumber(formData.exitWeight);
-      const pricePerKg = unformatNumber(formData.pricePerKg);
+      const vehicleWeight = parseInt(formData.vehicleWeight) || 0;
       
-      const roundedExit = exitWeight ? roundToNearest10(exitWeight) : exitWeight;
+      // Calculate exit weight by subtracting vehicle weight from entry weight
+      const calculatedExitWeight = entryWeight - vehicleWeight;
+      const roundedExit = roundToNearest10(calculatedExitWeight);
       const weightDiff = entryWeight - roundedExit;
       let roundedWeight;
-  
+
       if (weightDiff >= 1000) {
         roundedWeight = Math.floor(weightDiff / 100) * 100;
       } else if (weightDiff >= 100) {
@@ -80,12 +88,12 @@
       } else {
         roundedWeight = Math.floor(weightDiff);
       }
-  
+
       results = {
         weightDifference: weightDiff,
         roundedWeight: roundedWeight,
         roundingOff: weightDiff - roundedWeight,
-        totalPrice: roundedWeight * pricePerKg
+        totalPrice: roundedWeight * unformatNumber(formData.pricePerKg)
       };
     }
   
@@ -114,7 +122,8 @@
           entryDateTime: formData.entryDateTime,
           exitDateTime: null,
           types: selectedType,
-          userId: user.id
+          userId: user.id,
+          vehicleWeight: parseInt(formData.vehicleWeight),
         };
         
         console.log('Submitting payload:', payload); // Debug full payload
@@ -143,7 +152,8 @@
               year: 'numeric'
             }).split('/').join('-'),
             exitDateTime: null,
-            types: currentType // Use saved type
+            types: currentType, // Use saved type
+            vehicleWeight: ''
           };
           selectedType = currentType; // Keep the selected type
           
@@ -259,11 +269,30 @@
               <input
                 type="text"
                 value={formData.entryWeight}
-                on:input={(e) => handleNumberInput(e, 'entryWeight')}
+                on:input={(e) => {
+                  handleNumberInput(e, 'entryWeight');
+                  calculateWeight();
+                }}
                 class="w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg text-right transition duration-200"
                 placeholder="0"
                 required
               />
+            </div>
+  
+            <div class="space-y-3">
+              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <label class="block text-base font-semibold text-gray-700">Berat Kendaraan</label>
+              <select
+                bind:value={formData.vehicleWeight}
+                on:change={calculateWeight}
+                class="w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg transition duration-200"
+                required
+              >
+                <option value="">Pilih Berat Kendaraan</option>
+                {#each vehicleWeightOptions as option}
+                  <option value={option.value}>{option.label}</option>
+                {/each}
+              </select>
             </div>
   
             <div class="space-y-3">
@@ -280,23 +309,7 @@
             </div>
   
   
-            <!-- Results Display -->
-            {#if results.weightDifference > 0}
-              <div class="col-span-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 space-y-6">
-                <div class="grid grid-cols-2 gap-8">
-                  <div class="bg-white p-6 rounded-xl shadow-lg ">
-                    <h3 class="text-xl font-semibold text-gray-800">Berat Bersih</h3>
-                    <p class="text-4xl font-bold text-blue-600 mt-3">{formatNumber(results.roundedWeight)} KG</p>
-                    <p class="text-2xl text-gray-600 mt-2">{formatPrice(results.totalPrice)}</p>
-                  </div>
-                  <div class="bg-white p-6 rounded-xl shadow-lg ">
-                    <h3 class="text-xl font-semibold text-gray-800">Potongan</h3>
-                    <p class="text-4xl font-bold text-red-600 mt-3">{formatNumber(results.roundingOff)} KG</p>
-                    <p class="text-2xl text-gray-600 mt-2">{formatPrice(results.roundingOff * unformatNumber(formData.pricePerKg))}</p>
-                  </div>
-                </div>
-              </div>
-            {/if}
+           
           </div>
   
           <div class="flex justify-end pt-4">
