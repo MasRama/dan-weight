@@ -15,11 +15,11 @@
     // Add vehicle weight options
     const vehicleWeightOptions = [
       { value: 3500, label: '3.500 KG' },
-      { value: 4000, label: '4.000 KG' }
+      { value: 4000, label: '4.000 KG' },
+      { value: 8000, label: '8.000 KG' }
     ];
 
     let formData = {
-      ticketNumber: '',
       vehicleNumber: '',
       driverName: '',
       ownerName: '',
@@ -114,7 +114,6 @@
         const roundedExitWeight = roundToNearest10(exitWeight);
         
         const payload = {
-          ticketNumber: formData.ticketNumber,
           vehicleNumber: formData.vehicleNumber,
           driverName: formData.driverName, 
           ownerName: formData.ownerName,
@@ -141,7 +140,6 @@
           
           // Reset form after successful save
           formData = {
-            ticketNumber: '',
             vehicleNumber: '',
             driverName: '',
             ownerName: '',
@@ -229,18 +227,6 @@
         <form on:submit|preventDefault={handleSubmit} class="space-y-8">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Text inputs with larger styling -->
-            <div class="space-y-3">
-              <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="block text-base font-semibold text-gray-700">Nomor Tiket</label>
-              <input
-                type="text"
-                bind:value={formData.ticketNumber}
-                class="w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg transition duration-200"
-                placeholder="Masukkan Nomor Tiket"
-                required
-              />
-            </div>
-  
             <div class="space-y-3">
               <!-- svelte-ignore a11y-label-has-associated-control -->
               <label class="block text-base font-semibold text-gray-700">Nomor Kendaraan</label>

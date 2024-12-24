@@ -13,6 +13,25 @@ class Controller {
     try {
         const body = await request.json();
 
+        // Get current date parts
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Get month (1-12) and pad with 0
+
+        // Get the latest ticket number for current year and month
+        const latestTicket = await DB('calculations')
+            .where('ticket_number', 'like', `${year}${month}%`)
+            .orderBy('ticket_number', 'desc')
+            .first();
+
+        let sequence = '01';
+        if (latestTicket) {
+            const lastSequence = parseInt(latestTicket.ticket_number.slice(-2));
+            sequence = (lastSequence + 1).toString().padStart(2, '0');
+        }
+
+        const ticketNumber = `${year}${month}${sequence}`;
+
         // Calculate weights
         const entryWeight = body.entryWeight;
         const exitWeight = body.exitWeight;
@@ -28,7 +47,7 @@ class Controller {
         }
 
         const calculation = {
-            ticket_number: body.ticketNumber,
+            ticket_number: ticketNumber,
             vehicle_number: body.vehicleNumber,
             driver_name: body.driverName,
             owner_name: body.ownerName,
