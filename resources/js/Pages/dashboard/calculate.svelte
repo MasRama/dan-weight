@@ -3,12 +3,171 @@
     import { Toast } from '../../Components/helper';
     import axios from "axios"
     import CalculateHistory from '../../Components/CalculateHistory.svelte';
+    import { onMount, onDestroy } from 'svelte';
 
     export let user
     export let title;
     export let description;
   
     let calculateHistoryComponent;
+    let port;
+    let reader;
+    let keepReading = true;
+
+    async function connectArduino() {
+      try {
+        // Check if already connected
+        if (port) {
+          Toast('Arduino sudah terhubung', "info");
+          return;
+        }
+
+        // Request port access with Arduino USB filters
+        const filters = [
+          // Arduino Uno
+          { usbVendorId: 0x2341, usbProductId: 0x0043 },
+          { usbVendorId: 0x2341, usbProductId: 0x0001 },
+          // Arduino Mega
+          { usbVendorId: 0x2341, usbProductId: 0x0010 },
+          { usbVendorId: 0x2341, usbProductId: 0x0042 },
+          // Arduino Leonardo
+          { usbVendorId: 0x2341, usbProductId: 0x0036 },
+          { usbVendorId: 0x2341, usbProductId: 0x8036 },
+          // Arduino Micro
+          { usbVendorId: 0x2341, usbProductId: 0x0037 },
+          // CH340 chip (common in Arduino clones)
+          { usbVendorId: 0x1A86, usbProductId: 0x7523 },
+          // FTDI chip (common in Arduino clones)
+          { usbVendorId: 0x0403, usbProductId: 0x6001 },
+          // Add your specific device ID from the error message
+          { usbVendorId: 0x6790, usbProductId: 0x29987 }
+        ];
+
+        try {
+          port = await navigator.serial.requestPort({ filters });
+          const portInfo = port.getInfo();
+          console.log('Selected port:', portInfo);
+          
+          // Try to open with different baud rates if needed
+          const baudRates = [9600, 115200, 57600, 38400];
+          let connected = false;
+          
+          for (const baudRate of baudRates) {
+            try {
+              await port.open({ baudRate, bufferSize: 8192 });
+              console.log(`Connected at ${baudRate} baud`);
+              connected = true;
+              break;
+            } catch (err) {
+              console.log(`Failed to connect at ${baudRate} baud:`, err);
+              if (port.readable) {
+                await port.close();
+              }
+            }
+          }
+
+          if (!connected) {
+            throw new Error('Could not connect at any baud rate');
+          }
+
+          Toast('Arduino berhasil terhubung', "success");
+          
+          // Start reading data
+          reader = port.readable.getReader();
+          readSerialData();
+        } catch (err) {
+          console.error('Port open error:', err);
+          Toast(`Gagal membuka port: ${err.message}. Pastikan Arduino sudah memiliki permission yang benar`, "error");
+          if (port && port.readable) {
+            await port.close();
+          }
+          return;
+        }
+      } catch (error) {
+        if (error.name === 'SecurityError') {
+          Toast('Silakan klik tombol untuk menghubungkan Arduino', "error");
+        } else if (error.name === 'NetworkError') {
+          Toast('Gagal membuka port serial. Pastikan Arduino sudah memiliki permission yang benar. Coba jalankan: sudo chmod a+rw /dev/ttyUSB0', "error");
+        } else {
+          Toast(`Gagal menghubungkan Arduino: ${error.message}`, "error");
+          console.error('Arduino connection error:', error);
+        }
+      }
+    }
+
+    async function readSerialData() {
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let lastWeight = 0; // Track last weight to avoid unnecessary updates
+      
+      try {
+        console.log('Starting to read serial data...');
+        while (port && keepReading) {
+          const { value, done } = await reader.read();
+          if (done) {
+            console.log('Reader done, breaking loop');
+            reader.releaseLock();
+            break;
+          }
+          
+          // Append new data to buffer
+          const decodedData = decoder.decode(value);
+          console.log('Decoded data:', decodedData);
+          buffer += decodedData;
+          
+          // Process complete lines
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep the incomplete line in buffer
+          
+          for (const line of lines) {
+            console.log('Processing line:', line);
+            // Extract weight value using regex
+            const match = line.match(/Reading: ([\d.]+)/);
+            if (match) {
+              const weight = parseFloat(match[1]);
+              console.log('Extracted weight:', weight);
+              // Only update if weight is greater than 0 and different from last weight
+              if (weight > 0 && weight !== lastWeight) {
+                lastWeight = weight;
+                formData.entryWeight = formatNumber(Math.round(weight).toString());
+                calculateWeight();
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error reading serial data:', error);
+        Toast('Error membaca data dari Arduino', "error");
+        
+        // Try to reconnect
+        if (port) {
+          try {
+            await port.close();
+          } catch (e) {
+            console.error('Error closing port:', e);
+          }
+          port = null;
+          Toast('Koneksi terputus, silakan hubungkan kembali', "error");
+        }
+      }
+    }
+
+    onMount(() => {
+      // Check if Web Serial API is supported
+      if (!('serial' in navigator)) {
+        Toast('Browser tidak mendukung Web Serial API', "error");
+      }
+    });
+
+    onDestroy(async () => {
+      keepReading = false;
+      if (reader) {
+        await reader.cancel();
+      }
+      if (port) {
+        await port.close();
+      }
+    });
 
     let selectedType = ''; // Will store either 'truk' or 'gandengan' types vehicle
 
@@ -193,6 +352,18 @@
         <!-- Vehicle Type Selection -->
         <div class="mb-8 max-w-2xl mx-auto">
           <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Pilih Jenis Kendaraan:</h2>
+          
+          <!-- Add Arduino Connection Button -->
+          <div class="mb-4 text-center">
+            <button
+              type="button"
+              on:click={connectArduino}
+              class="px-6 py-2 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+            >
+              Hubungkan Arduino
+            </button>
+          </div>
+
           <div class="flex gap-4">
             <button
               type="button"
