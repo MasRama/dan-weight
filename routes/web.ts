@@ -19,6 +19,7 @@ Route.get('/dashboard/calculate/history', CalculateController.historyPage)
 Route.post('/api/calculate', CalculateController.store)
 Route.get('/api/calculations', CalculateController.history)
 Route.post('/api/calculations/edit', CalculateController.edit)
+Route.delete('/api/calculate/all', CalculateController.destroyAll)
 
 Route.get('/register', AuthController.register)
 Route.post('/register', AuthController.register)

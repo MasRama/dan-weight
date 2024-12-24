@@ -165,6 +165,23 @@
         console.error('Submit error:', error);
       }
     }
+
+    async function deleteAllData() {
+      if (confirm('Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan.')) {
+        try {
+          const response = await axios.delete('/api/calculate/all');
+          if (response.data.success) {
+            Toast('Semua data berhasil dihapus', "success");
+            if (calculateHistoryComponent) {
+              await calculateHistoryComponent.refreshData();
+            }
+          }
+        } catch (error) {
+          Toast('Gagal menghapus data', "error");
+          console.error('Delete all error:', error);
+        }
+      }
+    }
   </script>
   
   <GlobalLayout>
@@ -324,5 +341,16 @@
       <CalculateHistory 
         bind:this={calculateHistoryComponent}
       />
+
+      <!-- Delete All Button -->
+      <div class="mt-8 flex justify-end">
+        <button
+          type="button"
+          on:click={deleteAllData}
+          class="px-6 py-3 bg-red-600 text-white text-base font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+        >
+          Hapus Semua Data
+        </button>
+      </div>
     </div>
   </GlobalLayout>

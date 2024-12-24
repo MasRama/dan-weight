@@ -156,6 +156,24 @@ public async history(request, response) {
 
   }
 
+  public async destroyAll(request, response) {
+    try {
+      await DB('calculations').truncate();
+      
+      return response.json({
+        success: true,
+        message: 'All calculations deleted successfully'
+      });
+    } catch (error) {
+      console.error('Delete all calculations error:', error);
+      return response.json({
+        success: false,
+        message: 'Failed to delete all calculations',
+        error: error.message
+      }, 500);
+    }
+  }
+
 }
 
 export default new Controller();
