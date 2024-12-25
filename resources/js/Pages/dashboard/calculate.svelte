@@ -16,7 +16,7 @@
 
     async function connectArduino() {
       try {
-        // Check if already connected
+        // Check if already connected to arduino
         if (port) {
           Toast('Arduino sudah terhubung', "info");
           return;
