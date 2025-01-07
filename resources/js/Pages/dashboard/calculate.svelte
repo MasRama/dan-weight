@@ -98,7 +98,9 @@
     async function readSerialData() {
       const decoder = new TextDecoder();
       let buffer = '';
-      let lastWeight = 0; // Track last weight to avoid unnecessary updates
+      let lastWeight = 0;
+      let initialWeightSet = false;
+      const MIN_WEIGHT_THRESHOLD = 100; // Minimum weight threshold in grams
       
       try {
         console.log('Starting to read serial data...');
@@ -110,27 +112,52 @@
             break;
           }
           
-          // Append new data to buffer
+          // Decode the incoming data
           const decodedData = decoder.decode(value);
-          console.log('Decoded data:', decodedData);
+          console.log('Raw decoded data:', decodedData);
           buffer += decodedData;
           
-          // Process complete lines
+          // Process complete lines and handle multiple data formats
           const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // Keep the incomplete line in buffer
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
           
           for (const line of lines) {
+            if (!line.trim()) continue; // Skip empty lines
+            
             console.log('Processing line:', line);
-            // Extract weight value using regex
-            const match = line.match(/Reading: ([\d.]+)/);
-            if (match) {
-              const weight = parseFloat(match[1]);
+            
+            // Extract weight value
+            // Format expected: "Reading: X.XX gram calibration_factor: YYY"
+            const weightMatch = line.match(/Reading:\s*([-]?\d+\.?\d*)\s*gram/);
+            if (weightMatch) {
+              const weight = Math.abs(parseFloat(weightMatch[1]));
               console.log('Extracted weight:', weight);
-              // Only update if weight is greater than 0 and different from last weight
-              if (weight > 0 && weight !== lastWeight) {
-                lastWeight = weight;
-                formData.entryWeight = formatNumber(Math.round(weight).toString());
-                calculateWeight();
+              
+              // Only process weights above threshold
+              if (weight >= MIN_WEIGHT_THRESHOLD) {
+                if (!initialWeightSet) {
+                  lastWeight = weight;
+                  formData.entryWeight = formatNumber(Math.round(weight).toString());
+                  calculateWeight();
+                  initialWeightSet = true;
+                  console.log('Initial weight set to:', weight);
+                } else {
+                  // Only update if it's a new measurement above threshold
+                  const currentWeight = unformatNumber(formData.entryWeight);
+                  if (weight !== currentWeight) {
+                    console.log('New weight measurement:', weight, 'Current:', currentWeight);
+                    formData.entryWeight = formatNumber(Math.round(weight).toString());
+                    calculateWeight();
+                    lastWeight = weight;
+                  }
+                }
+              } else {
+                console.log('Ignoring weight below threshold:', weight);
+              }
+            } else if (line.includes('Zero factor:')) {
+              const zeroMatch = line.match(/Zero factor:\s*(\d+)/);
+              if (zeroMatch) {
+                console.log('Found zero factor:', zeroMatch[1]);
               }
             }
           }
@@ -139,9 +166,10 @@
         console.error('Error reading serial data:', error);
         Toast('Error membaca data dari Arduino', "error");
         
-        // Try to reconnect
+        // Try to gracefully handle disconnection
         if (port) {
           try {
+            reader.releaseLock();
             await port.close();
           } catch (e) {
             console.error('Error closing port:', e);
