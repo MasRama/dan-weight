@@ -13,85 +13,74 @@
     let port;
     let reader;
     let keepReading = true;
+    let socket;
+    const WS_URL = 'ws://localhost:3000/ws'; // Default to localhost for testing
+
+    function processWeight(weight) {
+      const MIN_WEIGHT_THRESHOLD = 100;
+      console.log('Processing weight:', weight);
+      
+      if (weight >= MIN_WEIGHT_THRESHOLD) {
+        const currentWeight = unformatNumber(formData.entryWeight);
+        if (weight !== currentWeight) {
+          console.log('New weight measurement:', weight, 'Current:', currentWeight);
+          formData.entryWeight = formatNumber(Math.round(weight).toString());
+          calculateWeight();
+        }
+      } else {
+        console.log('Ignoring weight below threshold:', weight);
+      }
+    }
 
     async function connectArduino() {
       try {
-        // Check if already connected to arduino
-        if (port) {
+        // Check if already connected
+        if (socket && socket.readyState === WebSocket.OPEN) {
           Toast('Arduino sudah terhubung', "info");
           return;
         }
 
-        // Request port access with Arduino USB filters
-        const filters = [
-          // Arduino Uno
-          { usbVendorId: 0x2341, usbProductId: 0x0043 },
-          { usbVendorId: 0x2341, usbProductId: 0x0001 },
-          // Arduino Mega
-          { usbVendorId: 0x2341, usbProductId: 0x0010 },
-          { usbVendorId: 0x2341, usbProductId: 0x0042 },
-          // Arduino Leonardo
-          { usbVendorId: 0x2341, usbProductId: 0x0036 },
-          { usbVendorId: 0x2341, usbProductId: 0x8036 },
-          // Arduino Micro
-          { usbVendorId: 0x2341, usbProductId: 0x0037 },
-          // CH340 chip (common in Arduino clones)
-          { usbVendorId: 0x1A86, usbProductId: 0x7523 },
-          // FTDI chip (common in Arduino clones)
-          { usbVendorId: 0x0403, usbProductId: 0x6001 },
-          // Add your specific device ID from the error message
-          { usbVendorId: 0x6790, usbProductId: 0x29987 }
-        ];
-
+        console.log('Attempting to connect to WebSocket at:', WS_URL);
+        
         try {
-          port = await navigator.serial.requestPort({ filters });
-          const portInfo = port.getInfo();
-          console.log('Selected port:', portInfo);
+          socket = new WebSocket(WS_URL);
           
-          // Try to open with different baud rates if needed
-          const baudRates = [9600, 115200, 57600, 38400];
-          let connected = false;
-          
-          for (const baudRate of baudRates) {
+          socket.onopen = () => {
+            Toast('Arduino berhasil terhubung', "success");
+            console.log('WebSocket Connected');
+          };
+
+          socket.onmessage = (event) => {
             try {
-              await port.open({ baudRate, bufferSize: 8192 });
-              console.log(`Connected at ${baudRate} baud`);
-              connected = true;
-              break;
-            } catch (err) {
-              console.log(`Failed to connect at ${baudRate} baud:`, err);
-              if (port.readable) {
-                await port.close();
+              const data = JSON.parse(event.data);
+              console.log('Received WebSocket data:', data);
+              if (data.type === 'weight' && data.weight) {
+                processWeight(Math.abs(parseFloat(data.weight)));
               }
+            } catch (err) {
+              console.error('Error processing WebSocket data:', err);
             }
-          }
+          };
 
-          if (!connected) {
-            throw new Error('Could not connect at any baud rate');
-          }
+          socket.onerror = (error) => {
+            console.error('WebSocket Error:', error);
+            Toast('Gagal terhubung ke Arduino', "error");
+          };
 
-          Toast('Arduino berhasil terhubung', "success");
-          
-          // Start reading data
-          reader = port.readable.getReader();
-          readSerialData();
-        } catch (err) {
-          console.error('Port open error:', err);
-          Toast(`Gagal membuka port: ${err.message}. Pastikan Arduino sudah memiliki permission yang benar`, "error");
-          if (port && port.readable) {
-            await port.close();
-          }
-          return;
+          socket.onclose = () => {
+            console.log('WebSocket Disconnected');
+            Toast('Koneksi terputus, mencoba menghubungkan kembali...', "error");
+            // Attempt to reconnect after 5 seconds
+            setTimeout(connectArduino, 5000);
+          };
+
+        } catch (wsError) {
+          console.error('WebSocket connection failed:', wsError);
+          Toast('Gagal terhubung ke Arduino', "error");
         }
       } catch (error) {
-        if (error.name === 'SecurityError') {
-          Toast('Silakan klik tombol untuk menghubungkan Arduino', "error");
-        } else if (error.name === 'NetworkError') {
-          Toast('Gagal membuka port serial. Pastikan Arduino sudah memiliki permission yang benar. Coba jalankan: sudo chmod a+rw /dev/ttyUSB0', "error");
-        } else {
-          Toast(`Gagal menghubungkan Arduino: ${error.message}`, "error");
-          console.error('Arduino connection error:', error);
-        }
+        Toast(`Gagal menghubungkan Arduino: ${error.message}`, "error");
+        console.error('Connection error:', error);
       }
     }
 
@@ -181,19 +170,13 @@
     }
 
     onMount(() => {
-      // Check if Web Serial API is supported
-      if (!('serial' in navigator)) {
-        Toast('Browser tidak mendukung Web Serial API', "error");
-      }
+      // Automatically try to connect when component mounts
+      connectArduino();
     });
 
-    onDestroy(async () => {
-      keepReading = false;
-      if (reader) {
-        await reader.cancel();
-      }
-      if (port) {
-        await port.close();
+    onDestroy(() => {
+      if (socket) {
+        socket.close();
       }
     });
 
