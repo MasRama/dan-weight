@@ -395,7 +395,7 @@
             <!-- Number inputs with auto formatting -->
             <div class="space-y-3">
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="block text-base font-semibold text-gray-700">Berat Masuk (KG)</label>
+              <label class="block text-base font-semibold text-gray-700">Berat Isi (KG)</label>
               <input
                 type="text"
                 value={formData.entryWeight ? formatNumber((unformatNumber(formData.entryWeight) / 1000).toFixed(2)).replace('.', ',') : ''}

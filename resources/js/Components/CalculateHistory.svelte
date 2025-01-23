@@ -585,11 +585,11 @@
           <p class="text-gray-900">{selectedCalc.owner_name}</p>
         </div>
         <div>
-          <p class="text-sm font-medium text-gray-500">Berat Masuk</p>
+          <p class="text-sm font-medium text-gray-500">Berat Isi</p>
           <p class="text-gray-900">{formatNumber((selectedCalc.entry_weight / 1000).toFixed(2))} kg</p>
         </div>
         <div>
-          <p class="text-sm font-medium text-gray-500">Berat Keluar</p>
+          <p class="text-sm font-medium text-gray-500">Berat Kosong</p>
           <p class="text-gray-900">{selectedCalc.exit_weight ? `${formatNumber((selectedCalc.exit_weight / 1000).toFixed(2))} kg` : 'Belum ditentukan'}</p>
         </div>
         <div>
@@ -679,7 +679,7 @@
           />
         </div>
         <div>
-          <label for="entry_weight" class="block text-sm font-medium text-gray-700">Berat Masuk (kg)</label>
+          <label for="entry_weight" class="block text-sm font-medium text-gray-700">Berat Isi (kg)</label>
           <input 
             type="text"
             bind:value={editingCalc.entry_weight}
@@ -687,12 +687,12 @@
           />
         </div>
         <div>
-          <label for="exit_weight" class="block text-sm font-medium text-gray-700">Berat Keluar (kg)</label>
+          <label for="exit_weight" class="block text-sm font-medium text-gray-700">Berat Kosong (kg)</label>
           <input 
             type="text"
             bind:value={editingCalc.exit_weight}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            placeholder="Masukkan berat keluar"
+            placeholder="Masukkan Berat Kosong"
           />
         </div>
         <div>
@@ -752,10 +752,11 @@
         <div>
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Dari:</h2>
           <div class="text-gray-600">
-            <p class="font-bold text-xl">PT. Timbangan Digital</p>
-            <p>Jl. Raya Utama No. 123</p>
-            <p>Jakarta Selatan, 12345</p>
-            <p>Telp: (021) 123-4567</p>
+            <p class="font-bold text-xl">UD. Puma Trans</p>
+            <p>Jl. Raya Talok Turen</p>
+            <p>Malang, 65171</p>
+            <p>Telp : 081-252-088-879 </p>
+            <p>FAX : 082-330-796-572</p>
           </div>
         </div>
         <div>
