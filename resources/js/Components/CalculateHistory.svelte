@@ -56,20 +56,26 @@
 
     const handleEdit = async () => {
       try {
-        const roundedExitWeight = editingCalc.exit_weight ? roundToNearest10(parseFloat(editingCalc.exit_weight)) : null;
-        
+        // Convert kg to grams for both weights
+        const entryWeightGrams = parseFloat(editingCalc.entry_weight.toString().replace(',', '.')) * 1000;
+        const exitWeightGrams = editingCalc.exit_weight ? parseFloat(editingCalc.exit_weight.toString().replace(',', '.')) * 1000 : null;
+
+        // Calculate net weight as entry weight minus exit weight
+        const netWeight = exitWeightGrams ? entryWeightGrams - exitWeightGrams : entryWeightGrams;
+
         const response = await axios.post(`/api/calculations/edit`, {
           id: editingCalc.id,
           ticketNumber: editingCalc.ticket_number,
           vehicleNumber: editingCalc.vehicle_number,
           driverName: editingCalc.driver_name,
           ownerName: editingCalc.owner_name,
-          entryWeight: editingCalc.entry_weight,
-          exitWeight: roundedExitWeight,
-          pricePerKg: editingCalc.price_per_kg,
+          entryWeight: entryWeightGrams,
+          exitWeight: exitWeightGrams,
+          netWeight: netWeight, // Add net weight to payload
+          pricePerKg: parseFloat(editingCalc.price_per_kg.toString().replace(/,/g, '')),
           entryDateTime: editingCalc.entry_datetime,
-          exitDateTime: editingCalc.exit_datetime,
-          userId: editingCalc.user_id
+          userId: editingCalc.user_id,
+          types: editingCalc.types
         });
 
         if (response.data.success) {
@@ -88,7 +94,13 @@
     };
 
     const openEditModal = (calc) => {
-      editingCalc = { ...calc };
+      // Convert grams to kg for display in form and format with commas
+      editingCalc = { 
+        ...calc,
+        entry_weight: formatNumber(calc.entry_weight / 1000),
+        exit_weight: calc.exit_weight ? formatNumber(calc.exit_weight / 1000) : null,
+        price_per_kg: calc.price_per_kg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") // Format price without decimals
+      };
       showEditModal = true;
     };
 
@@ -101,9 +113,24 @@
     }
 
     const formatCurrency = (amount) => {
-      return `Rp ${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+      // Format to 2 decimal places and use comma as decimal separator
+      const formattedAmount = parseFloat(amount).toFixed(0);
+      return `Rp ${formattedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
     };
-  
+
+    // Add a helper function for formatting numbers with commas
+    const formatNumber = (value) => {
+      if (typeof value === 'number') {
+        const formattedValue = value.toFixed(2);
+        const [whole, decimal] = formattedValue.split('.');
+        const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+      }
+      const [whole, decimal] = value.toString().split('.');
+      const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+    };
+
     const formatDate = (timestamp) => {
       if (!timestamp || isNaN(timestamp)) {
         return "Belum ditentukan";
@@ -374,8 +401,12 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.vehicle_number}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.driver_name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.types || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{calc.rounded_weight} kg</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(calc.total_price)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {calc.exit_weight ? formatNumber((calc.net_weight / 1000).toFixed(2)) : 'Belum ditentukan'} kg
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {calc.exit_weight ? formatCurrency(calc.total_price) : 'Belum ditentukan'}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(calc.entry_datetime)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <button 
@@ -451,27 +482,15 @@
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Berat Masuk</p>
-          <p class="text-gray-900">{selectedCalc.entry_weight} kg</p>
+          <p class="text-gray-900">{formatNumber((selectedCalc.entry_weight / 1000).toFixed(2))} kg</p>
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Berat Keluar</p>
-          <p class="text-gray-900">{selectedCalc.exit_weight ? `${selectedCalc.exit_weight} kg` : 'Belum ditentukan'}</p>
+          <p class="text-gray-900">{selectedCalc.exit_weight ? `${formatNumber((selectedCalc.exit_weight / 1000).toFixed(2))} kg` : 'Belum ditentukan'}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Berat Bersih</p>
-          <p class="text-gray-900">{selectedCalc.net_weight} kg</p>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-500">Berat Dibulatkan</p>
-          <p class="text-gray-900">{selectedCalc.rounded_weight} kg</p>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-500">Selisih Pembulatan</p>
-          <p class="text-gray-900">{selectedCalc.net_weight - selectedCalc.rounded_weight} kg</p>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-500">Harga Selisih Pembulatan</p>
-          <p class="text-gray-900">{formatCurrency((selectedCalc.net_weight - selectedCalc.rounded_weight) * selectedCalc.price_per_kg)}</p>
+          <p class="text-gray-900">{selectedCalc.exit_weight ? `${formatNumber((selectedCalc.net_weight / 1000).toFixed(2))} kg` : 'Belum ditentukan'}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Harga per Kg</p>
@@ -479,16 +498,18 @@
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Total Harga</p>
-          <p class="text-gray-900">{formatCurrency(selectedCalc.total_price)}</p>
+          <p class="text-gray-900">{selectedCalc.exit_weight ? formatCurrency(selectedCalc.total_price) : 'Belum ditentukan'}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Waktu Masuk</p>
           <p class="text-gray-900">{formatDate(selectedCalc.entry_datetime)}</p>
         </div>
+        {#if selectedCalc.exit_datetime}
         <div>
           <p class="text-sm font-medium text-gray-500">Waktu Keluar</p>
           <p class="text-gray-900">{formatDate(selectedCalc.exit_datetime)}</p>
         </div>
+        {/if}
         <div>
           <p class="text-sm font-medium text-gray-500">Jenis Kendaraan</p>
           <p class="text-gray-900">{selectedCalc.types || '-'}</p>
@@ -556,7 +577,7 @@
         <div>
           <label for="entry_weight" class="block text-sm font-medium text-gray-700">Berat Masuk (kg)</label>
           <input 
-            type="number"
+            type="text"
             bind:value={editingCalc.entry_weight}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
@@ -564,15 +585,16 @@
         <div>
           <label for="exit_weight" class="block text-sm font-medium text-gray-700">Berat Keluar (kg)</label>
           <input 
-            type="number"
+            type="text"
             bind:value={editingCalc.exit_weight}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            placeholder="Masukkan berat keluar"
           />
         </div>
         <div>
           <label for="price_per_kg" class="block text-sm font-medium text-gray-700">Harga per Kg</label>
           <input 
-            type="number"
+            type="text"
             bind:value={editingCalc.price_per_kg}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
@@ -660,7 +682,7 @@
                 Berat Kotor
               </td>
               <td class="px-6 py-4 text-sm text-gray-900 text-right">
-                {selectedInvoice.entry_weight} kg
+                {formatNumber((selectedInvoice.entry_weight / 1000).toFixed(2))} kg
               </td>
               <td class="px-6 py-4 text-sm text-gray-500 text-right">
                 -
@@ -674,13 +696,13 @@
                 Berat Bersih
               </td>
               <td class="px-6 py-4 text-sm text-gray-900 text-right">
-                {selectedInvoice.rounded_weight} kg
+                {selectedInvoice.exit_weight ? `${formatNumber((selectedInvoice.net_weight / 1000).toFixed(2))} kg` : 'Belum ditentukan'}
               </td>
               <td class="px-6 py-4 text-sm text-gray-900 text-right">
                 {formatCurrency(selectedInvoice.price_per_kg)}
               </td>
               <td class="px-6 py-4 text-sm text-gray-900 text-right font-medium">
-                {formatCurrency(selectedInvoice.total_price)}
+                {selectedInvoice.exit_weight ? formatCurrency(selectedInvoice.total_price) : 'Belum ditentukan'}
               </td>
             </tr>
           </tbody>
@@ -690,7 +712,7 @@
                 Total
               </th>
               <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">
-                {formatCurrency(selectedInvoice.total_price)}
+                {selectedInvoice.exit_weight ? formatCurrency(selectedInvoice.total_price) : 'Belum ditentukan'}
               </td>
             </tr>
           </tfoot>

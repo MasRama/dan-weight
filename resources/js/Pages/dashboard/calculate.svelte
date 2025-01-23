@@ -182,50 +182,36 @@
 
     let selectedType = ''; // Will store either 'truk' or 'gandengan' types vehicle
 
-    // Add vehicle weight options
-    const vehicleWeightOptions = [
-      { value: 3500, label: '3.500 KG' },
-      { value: 4000, label: '4.000 KG' },
-      { value: 8000, label: '8.000 KG' }
-    ];
-
     let formData = {
       vehicleNumber: '',
       driverName: '',
       ownerName: '',
       entryWeight: '',
-      exitWeight: null,
       pricePerKg: '',
       entryDateTime: Date.now(),
-      exitDateTime: null,
-      types: '',
-      vehicleWeight: '' // Add new field
+      types: ''
     };
 
-  
     let results = {
-      weightDifference: 0,
-      roundedWeight: 0,
-      roundingOff: 0,
       totalPrice: 0
     };
   
     function formatNumber(value) {
       if (!value) return '';
-      return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      if (typeof value === 'number') {
+        const formattedValue = value.toFixed(2);
+        const [whole, decimal] = formattedValue.split('.');
+        const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+      }
+      const [whole, decimal] = value.toString().split('.');
+      const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
     }
   
     function unformatNumber(value) {
       if (!value) return 0;
-      return parseFloat(value.replace(/\./g, ''));
-    }
-
-    function roundToNearest10(value) {
-      const remainder = value % 10;
-      if (remainder >= 5) {
-        return value + (10 - remainder);
-      }
-      return value - remainder;
+      return parseFloat(value.toString().replace(/,/g, ''));
     }
   
     function handleNumberInput(event, field) {
@@ -234,36 +220,15 @@
     }
   
     function formatPrice(price) {
-      return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-      }).format(price);
+      const formattedAmount = parseFloat(price).toFixed(0);
+      return `Rp ${formattedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
     }
   
     function calculateWeight() {
       const entryWeight = unformatNumber(formData.entryWeight);
-      const vehicleWeight = parseInt(formData.vehicleWeight) || 0;
       
-      // Calculate exit weight by subtracting vehicle weight from entry weight
-      const calculatedExitWeight = entryWeight - vehicleWeight;
-      const roundedExit = roundToNearest10(calculatedExitWeight);
-      const weightDiff = entryWeight - roundedExit;
-      let roundedWeight;
-
-      if (weightDiff >= 1000) {
-        roundedWeight = Math.floor(weightDiff / 100) * 100;
-      } else if (weightDiff >= 100) {
-        roundedWeight = Math.floor(weightDiff / 10) * 10;
-      } else {
-        roundedWeight = Math.floor(weightDiff);
-      }
-
       results = {
-        weightDifference: weightDiff,
-        roundedWeight: roundedWeight,
-        roundingOff: weightDiff - roundedWeight,
-        totalPrice: roundedWeight * unformatNumber(formData.pricePerKg)
+        totalPrice: (entryWeight / 1000) * unformatNumber(formData.pricePerKg)
       };
     }
   
@@ -279,34 +244,28 @@
       }
       try {
         const entryWeight = unformatNumber(formData.entryWeight);
-        const vehicleWeight = parseInt(formData.vehicleWeight) || 0;
-        const exitWeight = entryWeight - vehicleWeight;
-        const roundedExitWeight = roundToNearest10(exitWeight);
         
         const payload = {
           vehicleNumber: formData.vehicleNumber,
           driverName: formData.driverName, 
           ownerName: formData.ownerName,
           entryWeight: entryWeight,
-          exitWeight: roundedExitWeight,
           pricePerKg: unformatNumber(formData.pricePerKg),
           entryDateTime: formData.entryDateTime,
-          exitDateTime: null,
           types: selectedType,
-          userId: user.id,
-          vehicleWeight: vehicleWeight,
+          userId: user.id
         };
         
-        console.log('Submitting payload:', payload); // Debug full payload
+        console.log('Submitting payload:', payload);
         
         const response = await axios.post('/api/calculate', payload);
-        console.log('Response:', response.data); // Debug response
+        console.log('Response:', response.data);
 
         if (response.data.success) {
           Toast('Data berhasil disimpan', "success");
           // Save current values
           const currentPricePerKg = formData.pricePerKg;
-          const currentType = selectedType; // Save current type
+          const currentType = selectedType;
           
           // Reset form after successful save
           formData = {
@@ -314,14 +273,11 @@
             driverName: '',
             ownerName: '',
             entryWeight: '',
-            exitWeight: null,
             pricePerKg: currentPricePerKg,
             entryDateTime: Date.now(),
-            exitDateTime: null,
-            types: currentType, // Use saved type
-            vehicleWeight: ''
+            types: currentType
           };
-          selectedType = currentType; // Keep the selected type
+          selectedType = currentType;
           
           // Refresh the calculation history
           if (calculateHistoryComponent) {
@@ -451,31 +407,17 @@
               <label class="block text-base font-semibold text-gray-700">Berat Masuk (KG)</label>
               <input
                 type="text"
-                value={formData.entryWeight}
+                value={formData.entryWeight ? formatNumber((unformatNumber(formData.entryWeight) / 1000).toFixed(2)).replace('.', ',') : ''}
                 on:input={(e) => {
-                  handleNumberInput(e, 'entryWeight');
+                  const kgValue = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                  const gramValue = (parseFloat(kgValue) * 1000).toString();
+                  formData.entryWeight = formatNumber(gramValue);
                   calculateWeight();
                 }}
                 class="w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg text-right transition duration-200"
                 placeholder="0"
                 required
               />
-            </div>
-  
-            <div class="space-y-3">
-              <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label class="block text-base font-semibold text-gray-700">Berat Kendaraan</label>
-              <select
-                bind:value={formData.vehicleWeight}
-                on:change={calculateWeight}
-                class="w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg transition duration-200"
-                required
-              >
-                <option value="">Pilih Berat Kendaraan</option>
-                {#each vehicleWeightOptions as option}
-                  <option value={option.value}>{option.label}</option>
-                {/each}
-              </select>
             </div>
   
             <div class="space-y-3">

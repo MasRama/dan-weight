@@ -32,19 +32,8 @@ class Controller {
 
         const ticketNumber = `${year}${month}${sequence}`;
 
-        // Calculate weights
+        // Use raw weight without vehicle weight subtraction
         const entryWeight = body.entryWeight;
-        const exitWeight = body.exitWeight;
-        const weightDiff = exitWeight;
-        let roundedWeight;
-
-        if (weightDiff >= 1000) {
-            roundedWeight = Math.floor(weightDiff / 100) * 100;
-        } else if (weightDiff >= 100) {
-            roundedWeight = Math.floor(weightDiff / 10) * 10;
-        } else {
-            roundedWeight = Math.floor(weightDiff);
-        }
 
         const calculation = {
             ticket_number: ticketNumber,
@@ -52,14 +41,10 @@ class Controller {
             driver_name: body.driverName,
             owner_name: body.ownerName,
             entry_weight: entryWeight,
-            exit_weight: exitWeight,
+            net_weight: entryWeight,
             price_per_kg: body.pricePerKg,
-            net_weight: weightDiff,
-            rounded_weight: roundedWeight,
-            rounding_off: weightDiff - roundedWeight,
-            total_price: roundedWeight * body.pricePerKg,
+            total_price: (entryWeight / 1000) * body.pricePerKg, // Convert grams to kg for price calculation
             entry_datetime: body.entryDateTime || Date.now(),
-            exit_datetime: body.exitDateTime,
             user_id: body.userId,
             types: body.types
         };
@@ -92,32 +77,25 @@ public async edit(request, response) {
       const body = await request.json();
       const id = body.id;
   
-      // Calculate weights
-      const weightDiff = body.entryWeight - body.exitWeight;
-      let roundedWeight;
+      // Handle both entry and exit weights (already in grams from frontend)
+      const entryWeight = body.entryWeight;
+      const exitWeight = body.exitWeight || null;
   
-      if (weightDiff >= 1000) {
-          roundedWeight = Math.floor(weightDiff / 100) * 100;
-      } else if (weightDiff >= 100) {
-          roundedWeight = Math.floor(weightDiff / 10) * 10;
-      } else {
-          roundedWeight = Math.floor(weightDiff);
-      }
+      // Calculate net weight as entry weight minus exit weight
+      const netWeight = exitWeight ? entryWeight - exitWeight : entryWeight;
   
       const calculation = {
         ticket_number: body.ticketNumber,
         vehicle_number: body.vehicleNumber,
         driver_name: body.driverName,
         owner_name: body.ownerName,
-        entry_weight: body.entryWeight,
-        exit_weight: body.exitWeight,
+        entry_weight: entryWeight,
+        exit_weight: exitWeight,
+        net_weight: netWeight,
         price_per_kg: body.pricePerKg,
-        net_weight: weightDiff,
-        rounded_weight: roundedWeight,
-        rounding_off: weightDiff - roundedWeight,
-        total_price: roundedWeight * body.pricePerKg,
+        total_price: (netWeight / 1000) * body.pricePerKg, // Calculate based on net weight
         entry_datetime: body.entryDateTime,
-        exit_datetime: Date.now(),
+        exit_datetime: exitWeight ? Date.now() : null,
         user_id: body.userId,
         types: body.types
       };
