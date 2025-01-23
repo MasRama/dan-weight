@@ -7,6 +7,7 @@ const { ReadlineParser } = require('@serialport/parser-readline');
 const app = express();
 expressWs(app);
 const activeConnections = new Set();
+const editConnections = new Set(); // New set for edit modal connections
 
 // Arduino Configuration
 const SERIAL_PORT = process.env.SERIAL_PORT || '/dev/ttyUSB0';
@@ -39,14 +40,17 @@ serialPort.on('error', (err) => {
 // Process data from Arduino and broadcast to all WebSocket clients
 parser.on('data', (data) => {
   try {
-    console.log('Received from Arduino:', data);
+    console.log('\n--- Arduino Data Received ---');
+    console.log('Raw data:', data);
     
     // Parse weight data
     const weightMatch = data.match(/Reading:\s*([-]?\d+\.?\d*)\s*gram/);
     
     if (weightMatch) {
       const weight = Math.abs(parseFloat(weightMatch[1]));
-      console.log('Broadcasting weight to clients:', weight);
+      console.log('Parsed weight:', weight);
+      console.log('Active entry connections:', activeConnections.size);
+      console.log('Active edit connections:', editConnections.size);
       
       const message = JSON.stringify({
         type: 'weight',
@@ -54,9 +58,18 @@ parser.on('data', (data) => {
         timestamp: Date.now()
       });
 
-      // Broadcast to all connected clients
+      // Broadcast to entry clients
       activeConnections.forEach((client) => {
         if (client.readyState === client.OPEN) {
+          console.log('Broadcasting to entry client');
+          client.send(message);
+        }
+      });
+
+      // Broadcast to edit clients
+      editConnections.forEach((client) => {
+        if (client.readyState === client.OPEN) {
+          console.log('Broadcasting to edit client');
           client.send(message);
         }
       });
@@ -66,31 +79,61 @@ parser.on('data', (data) => {
   }
 });
 
-// WebSocket endpoint
+// Original WebSocket endpoint for entry weight
 app.ws('/ws', (ws, req) => {
-  console.log('New WebSocket client connected');
+  console.log('\n--- New Entry Connection ---');
+  console.log('Total entry connections before:', activeConnections.size);
   activeConnections.add(ws);
+  console.log('Total entry connections after:', activeConnections.size);
 
-  // Handle client messages (if needed)
   ws.on('message', (msg) => {
     try {
       const data = JSON.parse(msg);
-      console.log('Received from client:', data);
+      console.log('Entry client message:', data);
     } catch (error) {
-      console.error('Error processing client message:', error);
+      console.error('Error processing entry client message:', error);
     }
   });
 
-  // Handle client disconnection
   ws.on('close', () => {
-    console.log('Client disconnected');
+    console.log('\n--- Entry Connection Closed ---');
+    console.log('Total entry connections before:', activeConnections.size);
     activeConnections.delete(ws);
+    console.log('Total entry connections after:', activeConnections.size);
   });
 
-  // Handle errors
   ws.on('error', (error) => {
-    console.error('WebSocket client error:', error);
+    console.error('Entry WebSocket error:', error);
     activeConnections.delete(ws);
+  });
+});
+
+// New WebSocket endpoint for edit weight
+app.ws('/ws-edit', (ws, req) => {
+  console.log('\n--- New Edit Connection ---');
+  console.log('Total edit connections before:', editConnections.size);
+  editConnections.add(ws);
+  console.log('Total edit connections after:', editConnections.size);
+
+  ws.on('message', (msg) => {
+    try {
+      const data = JSON.parse(msg);
+      console.log('Edit client message:', data);
+    } catch (error) {
+      console.error('Error processing edit client message:', error);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('\n--- Edit Connection Closed ---');
+    console.log('Total edit connections before:', editConnections.size);
+    editConnections.delete(ws);
+    console.log('Total edit connections after:', editConnections.size);
+  });
+
+  ws.on('error', (error) => {
+    console.error('Edit WebSocket error:', error);
+    editConnections.delete(ws);
   });
 });
 

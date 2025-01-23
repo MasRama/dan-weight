@@ -1,5 +1,5 @@
 <script>
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import axios from "axios";
     import { Toast } from "./helper";
     
@@ -12,6 +12,26 @@
     let editingCalc = null;
     let showInvoiceModal = false;
     let selectedInvoice = null;
+    let socket = null;
+    const WS_URL = 'ws://localhost:3000/ws-edit'; // Changed to use edit-specific endpoint
+
+    function formatNumber(value) {
+      if (!value) return '';
+      if (typeof value === 'number') {
+        const formattedValue = value.toFixed(2);
+        const [whole, decimal] = formattedValue.split('.');
+        const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+      }
+      const [whole, decimal] = value.toString().split('.');
+      const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+    }
+
+    function unformatNumber(value) {
+      if (!value) return 0;
+      return parseFloat(value.toString().replace(/,/g, ''));
+    }
 
     function roundToNearest10(value) {
       const remainder = value % 10;
@@ -54,6 +74,87 @@
       });
     };
 
+    function connectWebSocket() {
+      console.log('\n--- Edit Modal WebSocket ---');
+      console.log('Attempting to connect to:', WS_URL);
+      
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        console.log('WebSocket already connected');
+        return;
+      }
+
+      socket = new WebSocket(WS_URL);
+      
+      socket.onopen = () => {
+        console.log('WebSocket connected successfully');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('\n--- Edit Modal Received Data ---');
+          console.log('Raw data:', data);
+          console.log('Modal state:', { showEditModal, editingCalc: !!editingCalc });
+          
+          if (data.type === 'weight' && data.weight) {
+            const weight = Math.abs(parseFloat(data.weight));
+            console.log('Processing weight:', weight);
+            processWeight(weight);
+          }
+        } catch (err) {
+          console.error('Error processing WebSocket data:', err);
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error('\n--- Edit Modal WebSocket Error ---');
+        console.error(error);
+      };
+
+      socket.onclose = () => {
+        console.log('\n--- Edit Modal WebSocket Closed ---');
+        socket = null;
+      };
+    }
+
+    function disconnectWebSocket() {
+      console.log('\n--- Edit Modal Disconnecting ---');
+      if (socket) {
+        console.log('Closing WebSocket connection');
+        socket.close();
+        socket = null;
+      } else {
+        console.log('No active WebSocket connection to close');
+      }
+    }
+
+    function processWeight(weight) {
+      console.log('\n--- Processing Weight in Edit Modal ---');
+      console.log('Input weight:', weight);
+      console.log('Modal state:', { showEditModal, editingCalc: !!editingCalc });
+      
+      const MIN_WEIGHT_THRESHOLD = 100;
+      
+      if (weight >= MIN_WEIGHT_THRESHOLD && showEditModal && editingCalc) {
+        const currentWeight = unformatNumber(editingCalc.exit_weight || '0');
+        console.log('Current exit weight:', currentWeight);
+        
+        if (weight !== currentWeight) {
+          console.log('Updating exit weight from', currentWeight, 'to', weight);
+          editingCalc.exit_weight = formatNumber((weight / 1000).toFixed(2));
+          console.log('New formatted exit weight:', editingCalc.exit_weight);
+        } else {
+          console.log('Weight unchanged, skipping update');
+        }
+      } else {
+        console.log('Skipping weight update. Conditions:', {
+          aboveThreshold: weight >= MIN_WEIGHT_THRESHOLD,
+          modalOpen: showEditModal,
+          hasEditingCalc: !!editingCalc
+        });
+      }
+    }
+
     const handleEdit = async () => {
       try {
         // Convert kg to grams for both weights
@@ -94,15 +195,31 @@
     };
 
     const openEditModal = (calc) => {
+      console.log('\n--- Opening Edit Modal ---');
+      console.log('Original calc:', calc);
+      
       // Convert grams to kg for display in form and format with commas
       editingCalc = { 
         ...calc,
         entry_weight: formatNumber(calc.entry_weight / 1000),
         exit_weight: calc.exit_weight ? formatNumber(calc.exit_weight / 1000) : null,
-        price_per_kg: calc.price_per_kg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") // Format price without decimals
+        price_per_kg: calc.price_per_kg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
       };
+      console.log('Formatted editingCalc:', editingCalc);
+      
       showEditModal = true;
+      console.log('Modal opened, connecting WebSocket');
+      connectWebSocket();
     };
+
+    $: if (!showEditModal) {
+      console.log('\n--- Modal Closed ---');
+      disconnectWebSocket();
+    }
+
+    onDestroy(() => {
+      disconnectWebSocket(); // Cleanup on component destroy
+    });
 
     $: {
       searchQuery;
@@ -116,19 +233,6 @@
       // Format to 2 decimal places and use comma as decimal separator
       const formattedAmount = parseFloat(amount).toFixed(0);
       return `Rp ${formattedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-    };
-
-    // Add a helper function for formatting numbers with commas
-    const formatNumber = (value) => {
-      if (typeof value === 'number') {
-        const formattedValue = value.toFixed(2);
-        const [whole, decimal] = formattedValue.split('.');
-        const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
-      }
-      const [whole, decimal] = value.toString().split('.');
-      const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
     };
 
     const formatDate = (timestamp) => {

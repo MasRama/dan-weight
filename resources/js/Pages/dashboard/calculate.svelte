@@ -320,16 +320,7 @@
         <div class="mb-8 max-w-2xl mx-auto">
           <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Pilih Jenis Kendaraan:</h2>
           
-          <!-- Add Arduino Connection Button -->
-          <div class="mb-4 text-center">
-            <button
-              type="button"
-              on:click={connectArduino}
-              class="px-6 py-2 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
-            >
-              Hubungkan Arduino
-            </button>
-          </div>
+          
 
           <div class="flex gap-4">
             <button
