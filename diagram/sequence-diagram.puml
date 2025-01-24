@@ -1,98 +1,80 @@
 @startuml
 
 skinparam sequence {
-    ArrowColor DeepPink
-    ActorBorderColor DeepPink
-    LifeLineBorderColor DeepPink
-    LifeLineBackgroundColor #ffe4e1
-    
+    ParticipantBackgroundColor #FEFECE
     ParticipantBorderColor DeepPink
-    ParticipantBackgroundColor #ffe4e1
-    ParticipantFontColor DeepPink
-    
-    ActorBackgroundColor #ffe4e1
-    ActorFontColor DeepPink
+    ArrowColor DeepPink
 }
 
-title Weight Calculation System
-
 actor User
-participant Browser
-participant AuthController
-participant Session
-participant CalculateController
-participant DB
+participant "Frontend" as FE
+participant "Backend" as BE
+participant "Database" as DB
+participant "Arduino" as ARD
 
-== Login Process ==
+== Authentication ==
+User -> FE: Access System
+FE -> BE: Request Landing Page
+BE --> FE: Return Landing Page
+User -> FE: Enter Credentials
+FE -> BE: Validate Credentials
+BE -> DB: Check User
+DB --> BE: Return User Data
+BE --> FE: Session Created
+FE --> User: Show Dashboard
 
-User -> Browser: Enter email/password
-Browser -> AuthController: POST /login
+== Arduino Connection ==
+FE -> ARD: Initialize WebSocket
+ARD --> FE: Connection Established
 
-AuthController -> DB: Query user by email
-DB --> AuthController: Return user data
-
-alt Invalid Credentials
-    AuthController --> Browser: Return 401 Unauthorized
-    Browser --> User: Show error message
-else Valid Credentials
-    AuthController -> DB: Delete existing sessions
-    AuthController -> Session: Create new session
-    Session --> AuthController: Return session ID
-    AuthController -> AuthController: Set session cookie
-    AuthController --> Browser: Return success response
-    Browser --> User: Redirect to dashboard
+== Entry Process ==
+User -> FE: Select Vehicle Type
+User -> FE: Fill Entry Form
+FE -> ARD: Request Weight Reading
+ARD --> FE: Send Weight Data
+alt Weight >= 100g
+    FE -> FE: Update Weight Display
+else Weight < 100g
+    FE -> FE: Ignore Reading
 end
 
-== Entry Weight Process ==
+User -> FE: Submit Entry
+FE -> BE: Send Entry Data
+BE -> BE: Generate Ticket Number
+BE -> BE: Calculate Total Price
+BE -> DB: Save Entry Data
+DB --> BE: Confirm Save
+BE --> FE: Return Success
+FE --> User: Show Success Message
 
-User -> Browser: Access calculation page
-Browser -> CalculateController: GET /calculate
-CalculateController --> Browser: Return calculation form
+== Exit Process ==
+User -> FE: Request Exit Weight
+FE -> ARD: Request Weight Reading
+ARD --> FE: Send Exit Weight
+User -> FE: Submit Exit Data
+FE -> BE: Send Exit Data
+BE -> BE: Calculate Net Weight
+BE -> BE: Calculate Final Price
+BE -> DB: Update Record
+DB --> BE: Confirm Update
+BE --> FE: Return Success
+FE --> User: Show Updated Data
 
-User -> Browser: Fill entry data\n(ticket, vehicle, weight, etc)
-Browser -> CalculateController: POST /calculate
+== History View ==
+User -> FE: Request History
+FE -> BE: Fetch History
+BE -> DB: Query All Records
+DB --> BE: Return Records
+BE --> FE: Send History Data
+FE --> User: Display History
 
-CalculateController -> CalculateController: Round entry weight to nearest 10\n(roundToNearest10)
-
-CalculateController -> DB: Insert calculation record with rounded entry weight
-DB --> CalculateController: Return calculation ID
-CalculateController --> Browser: Return success response
-Browser --> User: Show success message
-
-== Exit Weight & Calculation Process ==
-
-User -> Browser: Input exit weight
-Browser -> CalculateController: PUT /calculate/{id}
-
-CalculateController -> CalculateController: Round exit weight to nearest 10\n(roundToNearest10)
-CalculateController -> CalculateController: Calculate weight difference\n(rounded_entry - rounded_exit)
-
-alt Weight Difference >= 1000
-    CalculateController -> CalculateController: roundedWeight = floor(weightDiff/100) * 100
-else Weight Difference >= 100
-    CalculateController -> CalculateController: roundedWeight = floor(weightDiff/10) * 10
-else Weight Difference < 100
-    CalculateController -> CalculateController: roundedWeight = floor(weightDiff)
+alt Clear History
+    User -> FE: Request Clear History
+    FE -> BE: Clear History Request
+    BE -> DB: Truncate Records
+    DB --> BE: Confirm Clear
+    BE --> FE: Clear Success
+    FE --> User: Show Empty History
 end
-
-CalculateController -> CalculateController: Calculate total price\n(roundedWeight * price_per_kg)
-
-CalculateController -> DB: Update calculation with:\n- rounded_exit_weight\n- weight_difference\n- rounded_weight\n- total_price\n- exit_datetime
-DB --> CalculateController: Confirm update
-
-CalculateController --> Browser: Return calculation result
-Browser -> Browser: Display results:\n- Weight Difference\n- Rounded Weight\n- Price per KG\n- Total Price
-Browser --> User: Show final calculation
-
-== History Process ==
-
-User -> Browser: Access history page
-Browser -> CalculateController: GET /calculate/history
-
-CalculateController -> DB: Select all calculations
-DB --> CalculateController: Return calculations list
-
-CalculateController --> Browser: Return history page with data
-Browser --> User: Display calculation history
 
 @enduml

@@ -35,23 +35,45 @@ else (No)
     :Show Dashboard;
 endif
 
+|System|
+:Initialize WebSocket Connection;
+:Connect to Arduino;
+
 while (Process New Entry?) is (Yes)
     |User|
     partition "Weight Entry Process" {
+        :Select Vehicle Type;
+        note right
+            Vehicle Types:
+            * Truk
+            * Gandengan
+        end note
+
         :Fill Entry Form;
         note right
             Required Data:
-            * Ticket Number
             * Vehicle Number
             * Driver Name
             * Owner Name
-            * Entry Weight
             * Price per KG
+            * Types
         end note
         
         |System|
+        :Read Weight from Arduino;
+        if (Weight >= 100g?) then (Yes)
+            :Update Entry Weight Display;
+        else (No)
+            :Ignore Weight Reading;
+        endif
+
         :Validate Entry Data;
-        :Round Entry Weight to Nearest 10;
+        :Generate Ticket Number;
+        :Calculate Total Price;
+        note right
+            Price Calculation:
+            Total = (Weight in g / 1000) * Price per KG
+        end note
         :Save Entry Data;
         :Show Entry Success;
     }
@@ -61,24 +83,16 @@ while (Process New Entry?) is (Yes)
         :Fill Exit Form;
         note right
             Required Data:
-            * Exit Weight
+            * Exit Weight (from Arduino)
         end note
         
         |System|
-        :Round Exit Weight to Nearest 10;
-        :Calculate Weight Difference;
-        
-        if (Weight Difference >= 1000) then (Yes)
-            :Round to Nearest 100;
-        else (No)
-            if (Weight Difference >= 100) then (Yes)
-                :Round to Nearest 10;
-            else (No)
-                :Round to Nearest Whole Number;
-            endif
-        endif
-        
-        :Calculate Total Price;
+        :Read Exit Weight from Arduino;
+        :Calculate Net Weight;
+        note right
+            Net Weight = Entry Weight - Exit Weight
+        end note
+        :Calculate Final Price;
         :Save Exit Data;
     }
 
@@ -87,11 +101,12 @@ while (Process New Entry?) is (Yes)
         :Request History;
         
         |System|
-        :Fetch Calculations;
+        :Fetch All Calculations;
         :Display History Page;
         
         |User|
         :View Calculation Details;
+        :Option to Clear All History;
     }
     
     |User|

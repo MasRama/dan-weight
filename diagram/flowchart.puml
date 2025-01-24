@@ -1,100 +1,71 @@
 @startuml
 
 skinparam {
-    BackgroundColor #FEFECE
+    ActivityBackgroundColor #FEFECE
+    ActivityBorderColor DeepPink
+    ActivityDiamondBackgroundColor #FEFECE
+    ActivityDiamondBorderColor DeepPink
     ArrowColor DeepPink
-    BorderColor DeepPink
-    NodeBackgroundColor #FEFECE
-    NodeBorderColor DeepPink
 }
 
 start
 
-:User accesses system;
+:Access System;
 
-if (Has account?) then (no)
-    :Register new account;
-endif
-
-if (Want to login?) then (yes)
+if (Has Account?) then (yes)
     :Login;
-    if (Valid credentials?) then (yes)
-        :Dashboard;
+    if (Valid Credentials?) then (yes)
+        :Create Session;
     else (no)
-        :Show error message;
+        :Show Error;
         stop
     endif
 else (no)
-    :View calculation history;
+    :Register;
+endif
+
+:Initialize Arduino Connection;
+if (Connection Success?) then (yes)
+    :Show Dashboard;
+else (no)
+    :Show Connection Error;
     stop
 endif
 
-while (Continue process?) is (yes)
-    :Input entry data;
-    note right
-        - Ticket number
-        - Vehicle number
-        - Driver name
-        - Owner name
-        - Entry weight
-        - Price per kg
-    end note
+repeat
+    :Select Vehicle Type;
+    :Fill Entry Form;
     
-    :Round entry weight to nearest 10;
-    note right
-        remainder = weight % 10
-        if remainder >= 5
-            weight + (10 - remainder)
-        else
-            weight - remainder
-    end note
+    repeat
+        :Read Weight from Arduino;
+        if (Weight >= 100g?) then (yes)
+            :Update Weight Display;
+            :Enable Submit;
+        else (no)
+            :Ignore Reading;
+            :Disable Submit;
+        endif
+    repeat while (Submit?) is (no)
     
-    :Save entry data;
+    :Generate Ticket Number;
+    :Calculate Entry Price;
+    :Save Entry Data;
     
-    :Wait for exit weight;
-    
-    :Input exit weight;
-    
-    :Round exit weight to nearest 10;
-    note right
-        remainder = weight % 10
-        if remainder >= 5
-            weight + (10 - remainder)
-        else
-            weight - remainder
-    end note
-    
-    :Calculate weight difference;
-    note right
-        rounded_entry - rounded_exit
-    end note
-    
-    if (Weight difference >= 1000?) then (yes)
-        :Round to nearest 100;
-        note right
-            floor(weight/100) * 100
-        end note
-    else if (Weight difference >= 100?) then (yes)
-        :Round to nearest 10;
-        note right
-            floor(weight/10) * 10
-        end note
+    if (Process Exit Weight?) then (yes)
+        :Read Exit Weight from Arduino;
+        :Calculate Net Weight;
+        :Calculate Final Price;
+        :Update Record;
     else (no)
-        :Round to whole number;
-        note right
-            floor(weight)
-        end note
+        if (View History?) then (yes)
+            :Display History;
+            if (Clear History?) then (yes)
+                :Delete All Records;
+            endif
+        endif
     endif
-    
-    :Calculate total price;
-    note right
-        rounded_weight * price_per_kg
-    end note
-    
-    :Save calculation;
-    
-    :Display results;
-endwhile (no)
+
+repeat while (Continue?) is (yes)
 
 stop
 

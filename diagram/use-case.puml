@@ -4,62 +4,81 @@ skinparam usecase {
     BackgroundColor #FEFECE
     BorderColor DeepPink
     ArrowColor DeepPink
-    ActorBorderColor DeepPink
-    ActorFontColor DeepPink
-}
-
-skinparam actor {
-    BackgroundColor #FEFECE
-    BorderColor DeepPink
 }
 
 left to right direction
 
 actor "User" as user
+actor "Arduino" as arduino
 
-rectangle "Weight Calculation System" {
-    usecase "Login" as UC1
-    usecase "Register" as UC2
-    usecase "Logout" as UC3
-    usecase "Input Entry Weight" as UC4
-    usecase "Input Exit Weight" as UC5
-    usecase "View Calculation History" as UC6
-    usecase "Calculate Weight Difference" as UC7
-    usecase "Calculate Total Price" as UC8
-    usecase "Manage Session" as UC9
-    usecase "Round Entry Weight" as UC10
-    usecase "Round Exit Weight" as UC11
-    usecase "Round Weight Difference" as UC12
-    
-    ' User relationships
-    user --> UC1 : authenticates
-    user --> UC2 : registers
-    user --> UC3 : ends session
-    user --> UC4 : enters initial weight
-    user --> UC5 : enters final weight
-    user --> UC6 : views history
+rectangle "Weight Management System" {
+    ' Authentication
+    usecase "Access System" as UC1
+    usecase "Login" as UC2
+    usecase "Register" as UC3
+    usecase "Show Dashboard" as UC4
 
-    ' System relationships
-    UC4 ..> UC10 : includes
-    UC5 ..> UC11 : includes
-    UC5 ..> UC7 : includes
-    UC7 ..> UC12 : includes
-    UC12 ..> UC8 : includes
-    UC1 ..> UC9 : includes
-    
-    ' Extended relationships
-    UC4 ..> UC1 : requires
-    UC5 ..> UC1 : requires
+    ' Arduino Connection
+    usecase "Initialize WebSocket" as UC5
+    usecase "Connect Arduino" as UC6
+    usecase "Read Weight" as UC7
+
+    ' Entry Process
+    usecase "Select Vehicle Type" as UC8
+    usecase "Fill Entry Form" as UC9
+    usecase "Validate Weight" as UC10
+    usecase "Generate Ticket" as UC11
+    usecase "Calculate Entry Price" as UC12
+    usecase "Save Entry" as UC13
+
+    ' Exit Process
+    usecase "Process Exit Weight" as UC14
+    usecase "Calculate Net Weight" as UC15
+    usecase "Calculate Final Price" as UC16
+    usecase "Update Record" as UC17
+
+    ' History Management
+    usecase "View History" as UC18
+    usecase "Clear History" as UC19
 }
 
-note "Entry and Exit weights\nare rounded to nearest 10" as N1
-N1 .. UC10
-N1 .. UC11
+' User Relationships - Only direct access to system and auth
+user --> UC1
+user --> UC2
+user --> UC3
 
-note "Weight difference rounding:\n- ≥1000: round to 100\n- ≥100: round to 10\n- <100: round to whole" as N2
-N2 .. UC12
+' Arduino Relationships
+arduino --> UC6
+arduino --> UC7
 
-note "Sessions are managed for\nsecurity and user tracking" as N3
-N3 .. UC9
+' Authentication Flow
+UC1 ..> UC2 : <<include>>
+UC2 ..> UC4 : <<include>>
+UC3 ..> UC4 : <<include>>
+
+' Dashboard Access Requirements
+UC4 ..> UC5 : <<include>>
+UC4 ..> UC8 : <<extend>>
+UC4 ..> UC9 : <<extend>>
+UC4 ..> UC14 : <<extend>>
+UC4 ..> UC18 : <<extend>>
+UC4 ..> UC19 : <<extend>>
+
+' Arduino Connection Flow
+UC5 ..> UC6 : <<include>>
+UC6 ..> UC7 : <<include>>
+
+' Entry Process Flow
+UC9 ..> UC7 : <<include>>
+UC9 ..> UC10 : <<include>>
+UC9 ..> UC11 : <<include>>
+UC9 ..> UC12 : <<include>>
+UC9 ..> UC13 : <<include>>
+
+' Exit Process Flow
+UC14 ..> UC7 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC14 ..> UC16 : <<include>>
+UC14 ..> UC17 : <<include>>
 
 @enduml

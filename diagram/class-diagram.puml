@@ -1,12 +1,9 @@
 @startuml
 
-skin rose
-
-' Styling
 skinparam class {
     BackgroundColor #FEFECE
-    BorderColor #000000
-    ArrowColor #000000
+    BorderColor DeepPink
+    ArrowColor DeepPink
 }
 
 class User {
@@ -14,9 +11,10 @@ class User {
     -nama: string
     -email: string
     -password: string
-    
     -created_at: timestamp
     -updated_at: timestamp
+    +login(): boolean
+    +register(): void
 }
 
 class Session {
@@ -25,6 +23,9 @@ class Session {
     -token: string
     -expires_at: timestamp
     -created_at: timestamp
+    +create(): void
+    +validate(): boolean
+    +destroy(): void
 }
 
 class Calculation {
@@ -37,66 +38,87 @@ class Calculation {
     -exit_weight: decimal
     -price_per_kg: decimal
     -net_weight: decimal
-    -rounded_weight: decimal
-    -rounding_off: decimal
     -total_price: decimal
     -entry_datetime: bigint
     -exit_datetime: bigint
     -user_id: integer
+    -types: string
     -created_at: timestamp
-    +roundWeights(): void
-    +calculateTotalPrice(): void
+    +generateTicketNumber(): string
+    +calculateNetWeight(): decimal
+    +calculateTotalPrice(): decimal
+    +saveEntry(): void
+    +updateExit(): void
+}
+
+class ArduinoService {
+    -websocket: WebSocket
+    -isConnected: boolean
+    -minWeightThreshold: number
+    +initializeConnection(): void
+    +connect(): Promise<boolean>
+    +disconnect(): void
+    +readWeight(): Promise<number>
+    +validateWeight(weight: number): boolean
+    +onWeightReceived(callback: function): void
+}
+
+class DashboardController {
+    +showDashboard(request, response): Promise<void>
+    +showLandingPage(request, response): Promise<void>
 }
 
 class AuthController {
+    +showLoginForm(request, response): Promise<void>
+    +showRegisterForm(request, response): Promise<void>
     +login(request, response): Promise<void>
-    +processLogin(request, response): Promise<void>
     +register(request, response): Promise<void>
-    +processRegister(request, response): Promise<void>
     +logout(request, response): Promise<void>
-    
 }
 
 class CalculateController {
-    +index(request, response): Promise<void>
-    +store(request, response): Promise<void>
-    +update(request, response): Promise<void>
-    +list(request, response): Promise<void>
-    +detail(request, response): Promise<void>
-    -roundToNearest10(value: number): number
-    -calculateRoundedWeight(weightDiff: number): number
+    +showCalculationForm(request, response): Promise<void>
+    +processEntry(request, response): Promise<void>
+    +processExit(request, response): Promise<void>
+    +showHistory(request, response): Promise<void>
+    +clearHistory(request, response): Promise<void>
 }
 
-class WeightCalculator {
-    -weightDifference: number
-    -roundedWeight: number
-    -roundingOff: number
-    -totalPrice: number
-    +roundToNearest10(value: number): number
-    +calculateWeight(entryWeight: number, exitWeight: number, pricePerKg: number): void
-    -roundByRange(weightDiff: number): number
+class WeightService {
+    -arduinoService: ArduinoService
+    +initializeArduino(): Promise<void>
+    +getCurrentWeight(): Promise<number>
+    +validateWeight(weight: number): boolean
+    +calculatePrice(weight: number, pricePerKg: number): decimal
 }
 
-class DB {
-    +from(table: string): QueryBuilder
-    +transaction(): Transaction
+class Database {
+    +connect(): Promise<void>
+    +query(sql: string, params: array): Promise<any>
+    +transaction(): Promise<Transaction>
 }
-
-
 
 class AuthMiddleware {
-    +handle(request, response, next): Promise<void>
+    +validateSession(request, response, next): Promise<void>
 }
 
 ' Relationships
-User "1" -- "0..*" Session
-User "1" -- "0..*" Calculation
+User "1" -- "0..*" Session : has
+User "1" -- "0..*" Calculation : owns
+Session "1" -- "1" User : authenticates
+
 AuthController ..> User : manages
 AuthController ..> Session : manages
+DashboardController ..> Session : validates
 CalculateController ..> Calculation : manages
-CalculateController ..> WeightCalculator : uses
-WeightCalculator ..> Calculation : calculates
-AuthController ..> DB : uses
-CalculateController ..> DB : uses
+CalculateController ..> WeightService : uses
+WeightService ..> ArduinoService : uses
+
+AuthController ..> Database : uses
+CalculateController ..> Database : uses
+DashboardController ..> Database : uses
+
+AuthMiddleware ..> Session : validates
+AuthMiddleware ..> User : authenticates
 
 @enduml
