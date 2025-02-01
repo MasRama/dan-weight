@@ -2872,13 +2872,13 @@
   // node_modules/axios/lib/axios.js
   function createInstance(defaultConfig) {
     const context = new Axios_default(defaultConfig);
-    const instance8 = bind(Axios_default.prototype.request, context);
-    utils_default.extend(instance8, Axios_default.prototype, context, { allOwnKeys: true });
-    utils_default.extend(instance8, context, null, { allOwnKeys: true });
-    instance8.create = function create(instanceConfig) {
+    const instance11 = bind(Axios_default.prototype.request, context);
+    utils_default.extend(instance11, Axios_default.prototype, context, { allOwnKeys: true });
+    utils_default.extend(instance11, context, null, { allOwnKeys: true });
+    instance11.create = function create(instanceConfig) {
       return createInstance(mergeConfig(defaultConfig, instanceConfig));
     };
-    return instance8;
+    return instance11;
   }
   var axios, axios_default;
   var init_axios = __esm({
@@ -6113,6 +6113,12 @@
       node.parentNode.removeChild(node);
     }
   }
+  function destroy_each(iterations, detaching) {
+    for (let i = 0; i < iterations.length; i += 1) {
+      if (iterations[i])
+        iterations[i].d(detaching);
+    }
+  }
   function element(name) {
     return document.createElement(name);
   }
@@ -6178,8 +6184,31 @@
   function children(element2) {
     return Array.from(element2.childNodes);
   }
+  function set_data(text2, data) {
+    data = "" + data;
+    if (text2.data === data)
+      return;
+    text2.data = /** @type {string} */
+    data;
+  }
   function set_input_value(input, value) {
     input.value = value == null ? "" : value;
+  }
+  function select_option(select, value, mounting) {
+    for (let i = 0; i < select.options.length; i += 1) {
+      const option = select.options[i];
+      if (option.__value === value) {
+        option.selected = true;
+        return;
+      }
+    }
+    if (!mounting || value !== void 0) {
+      select.selectedIndex = -1;
+    }
+  }
+  function select_value(select) {
+    const selected_option = select.querySelector(":checked");
+    return selected_option && selected_option.__value;
   }
   function get_custom_elements_slots(element2) {
     const result = {};
@@ -6233,6 +6262,12 @@
   }
   function beforeUpdate(fn) {
     get_current_component().$$.before_update.push(fn);
+  }
+  function onMount(fn) {
+    get_current_component().$$.on_mount.push(fn);
+  }
+  function onDestroy(fn) {
+    get_current_component().$$.on_destroy.push(fn);
   }
   function bubble(component, event) {
     const callbacks = component.$$.callbacks[event.type];
@@ -6400,7 +6435,7 @@
       lookup.delete(block.key);
     });
   }
-  function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block2, next, get_context) {
+  function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block3, next, get_context) {
     let o = old_blocks.length;
     let n = list.length;
     let i = o;
@@ -6417,7 +6452,7 @@
       const key = get_key(child_ctx);
       let block = lookup.get(key);
       if (!block) {
-        block = create_each_block2(key, child_ctx);
+        block = create_each_block3(key, child_ctx);
         block.c();
       } else if (dynamic) {
         updates.push(() => block.p(child_ctx, dirty));
@@ -6606,7 +6641,7 @@
     }
     component.$$.dirty[i / 31 | 0] |= 1 << i % 31;
   }
-  function init(component, options, instance8, create_fragment12, not_equal, props, append_styles = null, dirty = [-1]) {
+  function init(component, options, instance11, create_fragment14, not_equal, props, append_styles = null, dirty = [-1]) {
     const parent_component = current_component;
     set_current_component(component);
     const $$ = component.$$ = {
@@ -6632,7 +6667,7 @@
     };
     append_styles && append_styles($$.root);
     let ready = false;
-    $$.ctx = instance8 ? instance8(component, options.props || {}, (i, ret, ...rest) => {
+    $$.ctx = instance11 ? instance11(component, options.props || {}, (i, ret, ...rest) => {
       const value = rest.length ? rest[0] : ret;
       if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
         if (!$$.skip_bound && $$.bound[i])
@@ -6645,7 +6680,7 @@
     $$.update();
     ready = true;
     run_all($$.before_update);
-    $$.fragment = create_fragment12 ? create_fragment12($$.ctx) : false;
+    $$.fragment = create_fragment14 ? create_fragment14($$.ctx) : false;
     if (options.target) {
       if (options.hydrate) {
         start_hydrating();
@@ -9892,7 +9927,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
     return {
       c() {
         span2 = element("span");
-        span2.innerHTML = `<span class="text-blue-500">REDS</span> <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>`;
+        span2.innerHTML = `<span class="text-blue-500">UD PUMA TRANS</span> <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 group-hover:w-full transition-all duration-300"></span>`;
         attr(span2, "class", "relative");
       },
       m(target, anchor) {
@@ -10050,7 +10085,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
           default_slot.c();
         t2 = space();
         create_component(footer.$$.fragment);
-        document.title = "REDS";
+        document.title = "UD PUMA TRANS";
         attr(main, "class", "flex-grow container mx-auto px-4 pt-28 pb-16");
         attr(div, "class", "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col");
       },
@@ -10745,8 +10780,11 @@ Please specify a more appropriate element using the "as" attribute. For example:
     let formData = { email: "", password: "" };
     const handleSubmit = async () => {
       try {
-        const response = await axios_default.post("/login", formData);
+        const response = await axios_default.post("/login", formData, {
+          headers: { "Content-Type": "application/json" }
+        });
         if (response.data.message === "Login successful") {
+          Toast("Login successful", "success");
           Fe.visit("/dashboard");
         } else {
           Toast(response.data.message, "error");
@@ -10833,7 +10871,10 @@ Please specify a more appropriate element using the "as" attribute. For example:
     let input3;
     let t13;
     let button;
-    let t14_value = loading ? "Processing..." : "Daftar";
+    let t14_value = (
+      /*loading*/
+      ctx[0] ? "Processing..." : "Daftar"
+    );
     let t14;
     let t15;
     let p;
@@ -10923,7 +10964,8 @@ Please specify a more appropriate element using the "as" attribute. For example:
         attr(div3, "class", "space-y-2");
         attr(button, "type", "submit");
         attr(button, "class", "w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50");
-        button.disabled = loading;
+        button.disabled = /*loading*/
+        ctx[0];
         attr(form, "class", "space-y-6");
         attr(p, "class", "mt-6 text-center text-sm text-gray-600");
         attr(div4, "class", "w-full max-w-md bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl p-8");
@@ -10942,7 +10984,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
         set_input_value(
           input0,
           /*$formData*/
-          ctx[0].name
+          ctx[1].name
         );
         append2(form, t4);
         append2(form, div1);
@@ -10952,7 +10994,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
         set_input_value(
           input1,
           /*$formData*/
-          ctx[0].email
+          ctx[1].email
         );
         append2(form, t7);
         append2(form, div2);
@@ -10962,7 +11004,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
         set_input_value(
           input2,
           /*$formData*/
-          ctx[0].password
+          ctx[1].password
         );
         append2(form, t10);
         append2(form, div3);
@@ -10972,7 +11014,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
         set_input_value(
           input3,
           /*$formData*/
-          ctx[0].password_confirmation
+          ctx[1].password_confirmation
         );
         append2(form, t13);
         append2(form, button);
@@ -10988,29 +11030,29 @@ Please specify a more appropriate element using the "as" attribute. For example:
               input0,
               "input",
               /*input0_input_handler*/
-              ctx[3]
+              ctx[4]
             ),
             listen(
               input1,
               "input",
               /*input1_input_handler*/
-              ctx[4]
+              ctx[5]
             ),
             listen(
               input2,
               "input",
               /*input2_input_handler*/
-              ctx[5]
+              ctx[6]
             ),
             listen(
               input3,
               "input",
               /*input3_input_handler*/
-              ctx[6]
+              ctx[7]
             ),
             listen(form, "submit", prevent_default(
               /*handleSubmit*/
-              ctx[2]
+              ctx[3]
             ))
           ];
           mounted = true;
@@ -11018,44 +11060,53 @@ Please specify a more appropriate element using the "as" attribute. For example:
       },
       p(ctx2, dirty) {
         if (dirty & /*$formData*/
-        1 && input0.value !== /*$formData*/
-        ctx2[0].name) {
+        2 && input0.value !== /*$formData*/
+        ctx2[1].name) {
           set_input_value(
             input0,
             /*$formData*/
-            ctx2[0].name
+            ctx2[1].name
           );
         }
         if (dirty & /*$formData*/
-        1 && input1.value !== /*$formData*/
-        ctx2[0].email) {
+        2 && input1.value !== /*$formData*/
+        ctx2[1].email) {
           set_input_value(
             input1,
             /*$formData*/
-            ctx2[0].email
+            ctx2[1].email
           );
         }
         if (dirty & /*$formData*/
-        1 && input2.value !== /*$formData*/
-        ctx2[0].password) {
+        2 && input2.value !== /*$formData*/
+        ctx2[1].password) {
           set_input_value(
             input2,
             /*$formData*/
-            ctx2[0].password
+            ctx2[1].password
           );
         }
         if (dirty & /*$formData*/
-        1 && input3.value !== /*$formData*/
-        ctx2[0].password_confirmation) {
+        2 && input3.value !== /*$formData*/
+        ctx2[1].password_confirmation) {
           set_input_value(
             input3,
             /*$formData*/
-            ctx2[0].password_confirmation
+            ctx2[1].password_confirmation
           );
+        }
+        if ((!current || dirty & /*loading*/
+        1) && t14_value !== (t14_value = /*loading*/
+        ctx2[0] ? "Processing..." : "Daftar"))
+          set_data(t14, t14_value);
+        if (!current || dirty & /*loading*/
+        1) {
+          button.disabled = /*loading*/
+          ctx2[0];
         }
         const link_changes = {};
         if (dirty & /*$$scope*/
-        128) {
+        256) {
           link_changes.$$scope = { dirty, ctx: ctx2 };
         }
         link.$set(link_changes);
@@ -11099,8 +11150,8 @@ Please specify a more appropriate element using the "as" attribute. For example:
       },
       p(ctx2, [dirty]) {
         const globallayout_changes = {};
-        if (dirty & /*$$scope, $formData*/
-        129) {
+        if (dirty & /*$$scope, loading, $formData*/
+        259) {
           globallayout_changes.$$scope = { dirty, ctx: ctx2 };
         }
         globallayout.$set(globallayout_changes);
@@ -11128,17 +11179,28 @@ Please specify a more appropriate element using the "as" attribute. For example:
       password: "",
       password_confirmation: ""
     });
-    component_subscribe($$self, formData, (value) => $$invalidate(0, $formData = value));
+    component_subscribe($$self, formData, (value) => $$invalidate(1, $formData = value));
+    let loading = false;
     const handleSubmit = async () => {
+      $$invalidate(0, loading = true);
       try {
-        const { data, status } = await axios_default.post("/login", formData);
-        if (status === 200) {
-          router.visit("/dashboard");
+        const registrationData = {
+          name: $formData.name,
+          email: $formData.email,
+          password: $formData.password
+        };
+        const response = await axios_default.post("/register", registrationData);
+        if (response.data.message === "Registration successful", "success") {
+          Toast("Registration successful", "success");
+          Fe.visit("/login");
         } else {
-          Toast(data.message, "error");
+          Toast(response.data.message, "error");
         }
       } catch (error) {
-        Toast(error.response?.data?.message, "error");
+        console.log(error);
+        Toast(error.response?.data?.error || "Registration failed", "error");
+      } finally {
+        $$invalidate(0, loading = false);
       }
     };
     function input0_input_handler() {
@@ -11158,6 +11220,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
       formData.set($formData);
     }
     return [
+      loading,
       $formData,
       formData,
       handleSubmit,
@@ -11167,7 +11230,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
       input3_input_handler
     ];
   }
-  var loading, Register, register_default;
+  var Register, register_default;
   var init_register = __esm({
     "resources/js/Pages/auth/register.svelte"() {
       init_internal();
@@ -11176,7 +11239,6 @@ Please specify a more appropriate element using the "as" attribute. For example:
       init_src();
       init_axios2();
       init_helper();
-      loading = false;
       Register = class extends SvelteComponent {
         constructor(options) {
           super();
@@ -11184,6 +11246,3726 @@ Please specify a more appropriate element using the "as" attribute. For example:
         }
       };
       register_default = Register;
+    }
+  });
+
+  // fakecss:/home/ramaren/dani/resources/js/Components/CalculateHistory.esbuild-svelte-fake-css
+  var init_CalculateHistory = __esm({
+    "fakecss:/home/ramaren/dani/resources/js/Components/CalculateHistory.esbuild-svelte-fake-css"() {
+    }
+  });
+
+  // resources/js/Components/CalculateHistory.svelte
+  function get_each_context2(ctx, list, i) {
+    const child_ctx = ctx.slice();
+    child_ctx[50] = list[i];
+    return child_ctx;
+  }
+  function get_each_context_1(ctx, list, i) {
+    const child_ctx = ctx.slice();
+    child_ctx[53] = list[i];
+    return child_ctx;
+  }
+  function create_each_block_1(ctx) {
+    let option_1;
+    let t_value = (
+      /*option*/
+      ctx[53].label + ""
+    );
+    let t;
+    let option_1_value_value;
+    return {
+      c() {
+        option_1 = element("option");
+        t = text(t_value);
+        option_1.__value = option_1_value_value = /*option*/
+        ctx[53].value;
+        set_input_value(option_1, option_1.__value);
+      },
+      m(target, anchor) {
+        insert(target, option_1, anchor);
+        append2(option_1, t);
+      },
+      p: noop2,
+      d(detaching) {
+        if (detaching) {
+          detach(option_1);
+        }
+      }
+    };
+  }
+  function create_else_block(ctx) {
+    let div0;
+    let t0;
+    let t1_value = (
+      /*filteredCalculations*/
+      ctx[0].length + ""
+    );
+    let t1;
+    let t2;
+    let t3_value = (
+      /*calculations*/
+      ctx[6].length + ""
+    );
+    let t3;
+    let t4;
+    let t5;
+    let div2;
+    let div1;
+    let table;
+    let thead;
+    let t21;
+    let tbody;
+    let each_value = ensure_array_like(
+      /*filteredCalculations*/
+      ctx[0]
+    );
+    let each_blocks = [];
+    for (let i = 0; i < each_value.length; i += 1) {
+      each_blocks[i] = create_each_block2(get_each_context2(ctx, each_value, i));
+    }
+    return {
+      c() {
+        div0 = element("div");
+        t0 = text("Menampilkan ");
+        t1 = text(t1_value);
+        t2 = text(" dari ");
+        t3 = text(t3_value);
+        t4 = text(" transaksi");
+        t5 = space();
+        div2 = element("div");
+        div1 = element("div");
+        table = element("table");
+        thead = element("thead");
+        thead.innerHTML = `<tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tiket</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sopir</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berat Bersih</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th> <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>`;
+        t21 = space();
+        tbody = element("tbody");
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].c();
+        }
+        attr(div0, "class", "mb-4 text-sm text-gray-600");
+        attr(thead, "class", "bg-gray-50");
+        attr(tbody, "class", "bg-white divide-y divide-gray-200");
+        attr(table, "class", "w-full");
+        attr(div1, "class", "overflow-x-auto");
+        attr(div2, "class", "bg-white rounded-lg shadow-sm overflow-hidden");
+      },
+      m(target, anchor) {
+        insert(target, div0, anchor);
+        append2(div0, t0);
+        append2(div0, t1);
+        append2(div0, t2);
+        append2(div0, t3);
+        append2(div0, t4);
+        insert(target, t5, anchor);
+        insert(target, div2, anchor);
+        append2(div2, div1);
+        append2(div1, table);
+        append2(table, thead);
+        append2(table, t21);
+        append2(table, tbody);
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          if (each_blocks[i]) {
+            each_blocks[i].m(tbody, null);
+          }
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t1_value !== (t1_value = /*filteredCalculations*/
+        ctx2[0].length + ""))
+          set_data(t1, t1_value);
+        if (dirty[0] & /*calculations*/
+        64 && t3_value !== (t3_value = /*calculations*/
+        ctx2[6].length + ""))
+          set_data(t3, t3_value);
+        if (dirty[0] & /*filteredCalculations, generateInvoice, openEditModal, showDetails, formatDate, formatCurrency*/
+        2031617) {
+          each_value = ensure_array_like(
+            /*filteredCalculations*/
+            ctx2[0]
+          );
+          let i;
+          for (i = 0; i < each_value.length; i += 1) {
+            const child_ctx = get_each_context2(ctx2, each_value, i);
+            if (each_blocks[i]) {
+              each_blocks[i].p(child_ctx, dirty);
+            } else {
+              each_blocks[i] = create_each_block2(child_ctx);
+              each_blocks[i].c();
+              each_blocks[i].m(tbody, null);
+            }
+          }
+          for (; i < each_blocks.length; i += 1) {
+            each_blocks[i].d(1);
+          }
+          each_blocks.length = each_value.length;
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div0);
+          detach(t5);
+          detach(div2);
+        }
+        destroy_each(each_blocks, detaching);
+      }
+    };
+  }
+  function create_if_block_4(ctx) {
+    let div1;
+    return {
+      c() {
+        div1 = element("div");
+        div1.innerHTML = `<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>`;
+        attr(div1, "class", "flex justify-center items-center h-64");
+      },
+      m(target, anchor) {
+        insert(target, div1, anchor);
+      },
+      p: noop2,
+      d(detaching) {
+        if (detaching) {
+          detach(div1);
+        }
+      }
+    };
+  }
+  function create_else_block_1(ctx) {
+    let span;
+    return {
+      c() {
+        span = element("span");
+        span.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg>`;
+        attr(span, "class", "inline-flex items-center justify-center w-6 h-6 bg-yellow-50 text-yellow-500 rounded-full");
+      },
+      m(target, anchor) {
+        insert(target, span, anchor);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(span);
+        }
+      }
+    };
+  }
+  function create_if_block_5(ctx) {
+    let span;
+    return {
+      c() {
+        span = element("span");
+        span.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 "><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path></svg>`;
+        attr(span, "class", "inline-flex items-center justify-center w-6 h-6 bg-green-50 text-green-500 rounded-full");
+      },
+      m(target, anchor) {
+        insert(target, span, anchor);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(span);
+        }
+      }
+    };
+  }
+  function create_each_block2(ctx) {
+    let tr;
+    let td0;
+    let t0_value = (
+      /*calc*/
+      ctx[50].ticket_number + ""
+    );
+    let t0;
+    let t1;
+    let td1;
+    let t2_value = (
+      /*calc*/
+      ctx[50].vehicle_number + ""
+    );
+    let t2;
+    let t3;
+    let td2;
+    let t4_value = (
+      /*calc*/
+      ctx[50].driver_name + ""
+    );
+    let t4;
+    let t5;
+    let td3;
+    let t6_value = (
+      /*calc*/
+      (ctx[50].types || "-") + ""
+    );
+    let t6;
+    let t7;
+    let td4;
+    let t8_value = (
+      /*calc*/
+      (ctx[50].exit_weight ? formatNumber(
+        /*calc*/
+        (ctx[50].net_weight / 1e3).toFixed(2)
+      ) : "Belum ditentukan") + ""
+    );
+    let t8;
+    let t9;
+    let t10;
+    let td5;
+    let t11_value = (
+      /*calc*/
+      (ctx[50].exit_weight ? (
+        /*formatCurrency*/
+        ctx[17](
+          /*calc*/
+          ctx[50].total_price
+        )
+      ) : "Belum ditentukan") + ""
+    );
+    let t11;
+    let t12;
+    let td6;
+    let t13_value = (
+      /*formatDate*/
+      ctx[18](
+        /*calc*/
+        ctx[50].entry_datetime
+      ) + ""
+    );
+    let t13;
+    let t14;
+    let td7;
+    let button0;
+    let t16;
+    let button1;
+    let t18;
+    let button2;
+    let t20;
+    let t21;
+    let mounted;
+    let dispose;
+    function click_handler() {
+      return (
+        /*click_handler*/
+        ctx[27](
+          /*calc*/
+          ctx[50]
+        )
+      );
+    }
+    function click_handler_1() {
+      return (
+        /*click_handler_1*/
+        ctx[28](
+          /*calc*/
+          ctx[50]
+        )
+      );
+    }
+    function click_handler_2() {
+      return (
+        /*click_handler_2*/
+        ctx[29](
+          /*calc*/
+          ctx[50]
+        )
+      );
+    }
+    function select_block_type_1(ctx2, dirty) {
+      if (
+        /*calc*/
+        ctx2[50].exit_weight
+      )
+        return create_if_block_5;
+      return create_else_block_1;
+    }
+    let current_block_type = select_block_type_1(ctx, [-1, -1]);
+    let if_block = current_block_type(ctx);
+    return {
+      c() {
+        tr = element("tr");
+        td0 = element("td");
+        t0 = text(t0_value);
+        t1 = space();
+        td1 = element("td");
+        t2 = text(t2_value);
+        t3 = space();
+        td2 = element("td");
+        t4 = text(t4_value);
+        t5 = space();
+        td3 = element("td");
+        t6 = text(t6_value);
+        t7 = space();
+        td4 = element("td");
+        t8 = text(t8_value);
+        t9 = text(" kg");
+        t10 = space();
+        td5 = element("td");
+        t11 = text(t11_value);
+        t12 = space();
+        td6 = element("td");
+        t13 = text(t13_value);
+        t14 = space();
+        td7 = element("td");
+        button0 = element("button");
+        button0.textContent = "Detail";
+        t16 = space();
+        button1 = element("button");
+        button1.textContent = "Edit";
+        t18 = space();
+        button2 = element("button");
+        button2.textContent = "Invoice";
+        t20 = space();
+        if_block.c();
+        t21 = space();
+        attr(td0, "class", "px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900");
+        attr(td1, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(td2, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(td3, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(td4, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(td5, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(td6, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(button0, "class", "bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors mr-2");
+        attr(button1, "class", "bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition-colors mr-2");
+        attr(button2, "class", "bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-sm transition-colors mr-2");
+        attr(td7, "class", "px-6 py-4 whitespace-nowrap text-sm text-gray-500");
+        attr(tr, "class", "hover:bg-gray-50");
+      },
+      m(target, anchor) {
+        insert(target, tr, anchor);
+        append2(tr, td0);
+        append2(td0, t0);
+        append2(tr, t1);
+        append2(tr, td1);
+        append2(td1, t2);
+        append2(tr, t3);
+        append2(tr, td2);
+        append2(td2, t4);
+        append2(tr, t5);
+        append2(tr, td3);
+        append2(td3, t6);
+        append2(tr, t7);
+        append2(tr, td4);
+        append2(td4, t8);
+        append2(td4, t9);
+        append2(tr, t10);
+        append2(tr, td5);
+        append2(td5, t11);
+        append2(tr, t12);
+        append2(tr, td6);
+        append2(td6, t13);
+        append2(tr, t14);
+        append2(tr, td7);
+        append2(td7, button0);
+        append2(td7, t16);
+        append2(td7, button1);
+        append2(td7, t18);
+        append2(td7, button2);
+        append2(td7, t20);
+        if_block.m(td7, null);
+        append2(tr, t21);
+        if (!mounted) {
+          dispose = [
+            listen(button0, "click", click_handler),
+            listen(button1, "click", click_handler_1),
+            listen(button2, "click", click_handler_2)
+          ];
+          mounted = true;
+        }
+      },
+      p(new_ctx, dirty) {
+        ctx = new_ctx;
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t0_value !== (t0_value = /*calc*/
+        ctx[50].ticket_number + ""))
+          set_data(t0, t0_value);
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t2_value !== (t2_value = /*calc*/
+        ctx[50].vehicle_number + ""))
+          set_data(t2, t2_value);
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t4_value !== (t4_value = /*calc*/
+        ctx[50].driver_name + ""))
+          set_data(t4, t4_value);
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t6_value !== (t6_value = /*calc*/
+        (ctx[50].types || "-") + ""))
+          set_data(t6, t6_value);
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t8_value !== (t8_value = /*calc*/
+        (ctx[50].exit_weight ? formatNumber(
+          /*calc*/
+          (ctx[50].net_weight / 1e3).toFixed(2)
+        ) : "Belum ditentukan") + ""))
+          set_data(t8, t8_value);
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t11_value !== (t11_value = /*calc*/
+        (ctx[50].exit_weight ? (
+          /*formatCurrency*/
+          ctx[17](
+            /*calc*/
+            ctx[50].total_price
+          )
+        ) : "Belum ditentukan") + ""))
+          set_data(t11, t11_value);
+        if (dirty[0] & /*filteredCalculations*/
+        1 && t13_value !== (t13_value = /*formatDate*/
+        ctx[18](
+          /*calc*/
+          ctx[50].entry_datetime
+        ) + ""))
+          set_data(t13, t13_value);
+        if (current_block_type !== (current_block_type = select_block_type_1(ctx, dirty))) {
+          if_block.d(1);
+          if_block = current_block_type(ctx);
+          if (if_block) {
+            if_block.c();
+            if_block.m(td7, null);
+          }
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(tr);
+        }
+        if_block.d();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_if_block_2(ctx) {
+    let div15;
+    let div14;
+    let div0;
+    let h2;
+    let t1;
+    let button0;
+    let t2;
+    let div12;
+    let div1;
+    let p0;
+    let t4;
+    let p1;
+    let t5_value = (
+      /*selectedCalc*/
+      ctx[9].ticket_number + ""
+    );
+    let t5;
+    let t6;
+    let div2;
+    let p2;
+    let t8;
+    let p3;
+    let t9_value = (
+      /*selectedCalc*/
+      ctx[9].vehicle_number + ""
+    );
+    let t9;
+    let t10;
+    let div3;
+    let p4;
+    let t12;
+    let p5;
+    let t13_value = (
+      /*selectedCalc*/
+      ctx[9].driver_name + ""
+    );
+    let t13;
+    let t14;
+    let div4;
+    let p6;
+    let t16;
+    let p7;
+    let t17_value = (
+      /*selectedCalc*/
+      ctx[9].owner_name + ""
+    );
+    let t17;
+    let t18;
+    let div5;
+    let p8;
+    let t20;
+    let p9;
+    let t21_value = formatNumber(
+      /*selectedCalc*/
+      (ctx[9].entry_weight / 1e3).toFixed(2)
+    ) + "";
+    let t21;
+    let t22;
+    let t23;
+    let div6;
+    let p10;
+    let t25;
+    let p11;
+    let t26_value = (
+      /*selectedCalc*/
+      ctx[9].exit_weight ? `${formatNumber(
+        /*selectedCalc*/
+        (ctx[9].exit_weight / 1e3).toFixed(2)
+      )} kg` : "Belum ditentukan"
+    );
+    let t26;
+    let t27;
+    let div7;
+    let p12;
+    let t29;
+    let p13;
+    let t30_value = (
+      /*selectedCalc*/
+      ctx[9].exit_weight ? `${formatNumber(
+        /*selectedCalc*/
+        (ctx[9].net_weight / 1e3).toFixed(2)
+      )} kg` : "Belum ditentukan"
+    );
+    let t30;
+    let t31;
+    let div8;
+    let p14;
+    let t33;
+    let p15;
+    let t34_value = (
+      /*formatCurrency*/
+      ctx[17](
+        /*selectedCalc*/
+        ctx[9].price_per_kg
+      ) + ""
+    );
+    let t34;
+    let t35;
+    let div9;
+    let p16;
+    let t37;
+    let p17;
+    let t38_value = (
+      /*selectedCalc*/
+      (ctx[9].exit_weight ? (
+        /*formatCurrency*/
+        ctx[17](
+          /*selectedCalc*/
+          ctx[9].total_price
+        )
+      ) : "Belum ditentukan") + ""
+    );
+    let t38;
+    let t39;
+    let div10;
+    let p18;
+    let t41;
+    let p19;
+    let t42_value = (
+      /*formatDate*/
+      ctx[18](
+        /*selectedCalc*/
+        ctx[9].entry_datetime
+      ) + ""
+    );
+    let t42;
+    let t43;
+    let t44;
+    let div11;
+    let p20;
+    let t46;
+    let p21;
+    let t47_value = (
+      /*selectedCalc*/
+      (ctx[9].types || "-") + ""
+    );
+    let t47;
+    let t48;
+    let div13;
+    let button1;
+    let mounted;
+    let dispose;
+    let if_block = (
+      /*selectedCalc*/
+      ctx[9].exit_datetime && create_if_block_3(ctx)
+    );
+    return {
+      c() {
+        div15 = element("div");
+        div14 = element("div");
+        div0 = element("div");
+        h2 = element("h2");
+        h2.textContent = "Detail Transaksi";
+        t1 = space();
+        button0 = element("button");
+        button0.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+        t2 = space();
+        div12 = element("div");
+        div1 = element("div");
+        p0 = element("p");
+        p0.textContent = "No. Tiket";
+        t4 = space();
+        p1 = element("p");
+        t5 = text(t5_value);
+        t6 = space();
+        div2 = element("div");
+        p2 = element("p");
+        p2.textContent = "Kendaraan";
+        t8 = space();
+        p3 = element("p");
+        t9 = text(t9_value);
+        t10 = space();
+        div3 = element("div");
+        p4 = element("p");
+        p4.textContent = "Nama Sopir";
+        t12 = space();
+        p5 = element("p");
+        t13 = text(t13_value);
+        t14 = space();
+        div4 = element("div");
+        p6 = element("p");
+        p6.textContent = "Nama Pemilik";
+        t16 = space();
+        p7 = element("p");
+        t17 = text(t17_value);
+        t18 = space();
+        div5 = element("div");
+        p8 = element("p");
+        p8.textContent = "Berat Isi";
+        t20 = space();
+        p9 = element("p");
+        t21 = text(t21_value);
+        t22 = text(" kg");
+        t23 = space();
+        div6 = element("div");
+        p10 = element("p");
+        p10.textContent = "Berat Kosong";
+        t25 = space();
+        p11 = element("p");
+        t26 = text(t26_value);
+        t27 = space();
+        div7 = element("div");
+        p12 = element("p");
+        p12.textContent = "Berat Bersih";
+        t29 = space();
+        p13 = element("p");
+        t30 = text(t30_value);
+        t31 = space();
+        div8 = element("div");
+        p14 = element("p");
+        p14.textContent = "Harga per Kg";
+        t33 = space();
+        p15 = element("p");
+        t34 = text(t34_value);
+        t35 = space();
+        div9 = element("div");
+        p16 = element("p");
+        p16.textContent = "Total Harga";
+        t37 = space();
+        p17 = element("p");
+        t38 = text(t38_value);
+        t39 = space();
+        div10 = element("div");
+        p18 = element("p");
+        p18.textContent = "Waktu Masuk";
+        t41 = space();
+        p19 = element("p");
+        t42 = text(t42_value);
+        t43 = space();
+        if (if_block)
+          if_block.c();
+        t44 = space();
+        div11 = element("div");
+        p20 = element("p");
+        p20.textContent = "Jenis Kendaraan";
+        t46 = space();
+        p21 = element("p");
+        t47 = text(t47_value);
+        t48 = space();
+        div13 = element("div");
+        button1 = element("button");
+        button1.textContent = "Tutup";
+        attr(h2, "class", "text-xl font-bold text-gray-800");
+        attr(button0, "class", "text-gray-500 hover:text-gray-700");
+        attr(div0, "class", "flex justify-between items-center mb-6");
+        attr(p0, "class", "text-sm font-medium text-gray-500");
+        attr(p1, "class", "text-gray-900");
+        attr(p2, "class", "text-sm font-medium text-gray-500");
+        attr(p3, "class", "text-gray-900");
+        attr(p4, "class", "text-sm font-medium text-gray-500");
+        attr(p5, "class", "text-gray-900");
+        attr(p6, "class", "text-sm font-medium text-gray-500");
+        attr(p7, "class", "text-gray-900");
+        attr(p8, "class", "text-sm font-medium text-gray-500");
+        attr(p9, "class", "text-gray-900");
+        attr(p10, "class", "text-sm font-medium text-gray-500");
+        attr(p11, "class", "text-gray-900");
+        attr(p12, "class", "text-sm font-medium text-gray-500");
+        attr(p13, "class", "text-gray-900");
+        attr(p14, "class", "text-sm font-medium text-gray-500");
+        attr(p15, "class", "text-gray-900");
+        attr(p16, "class", "text-sm font-medium text-gray-500");
+        attr(p17, "class", "text-gray-900");
+        attr(p18, "class", "text-sm font-medium text-gray-500");
+        attr(p19, "class", "text-gray-900");
+        attr(p20, "class", "text-sm font-medium text-gray-500");
+        attr(p21, "class", "text-gray-900");
+        attr(div12, "class", "grid grid-cols-2 gap-4");
+        attr(button1, "class", "bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md transition-colors");
+        attr(div13, "class", "mt-6 flex justify-end");
+        attr(div14, "class", "bg-white rounded-lg max-w-2xl w-full p-6");
+        attr(div15, "class", "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50");
+      },
+      m(target, anchor) {
+        insert(target, div15, anchor);
+        append2(div15, div14);
+        append2(div14, div0);
+        append2(div0, h2);
+        append2(div0, t1);
+        append2(div0, button0);
+        append2(div14, t2);
+        append2(div14, div12);
+        append2(div12, div1);
+        append2(div1, p0);
+        append2(div1, t4);
+        append2(div1, p1);
+        append2(p1, t5);
+        append2(div12, t6);
+        append2(div12, div2);
+        append2(div2, p2);
+        append2(div2, t8);
+        append2(div2, p3);
+        append2(p3, t9);
+        append2(div12, t10);
+        append2(div12, div3);
+        append2(div3, p4);
+        append2(div3, t12);
+        append2(div3, p5);
+        append2(p5, t13);
+        append2(div12, t14);
+        append2(div12, div4);
+        append2(div4, p6);
+        append2(div4, t16);
+        append2(div4, p7);
+        append2(p7, t17);
+        append2(div12, t18);
+        append2(div12, div5);
+        append2(div5, p8);
+        append2(div5, t20);
+        append2(div5, p9);
+        append2(p9, t21);
+        append2(p9, t22);
+        append2(div12, t23);
+        append2(div12, div6);
+        append2(div6, p10);
+        append2(div6, t25);
+        append2(div6, p11);
+        append2(p11, t26);
+        append2(div12, t27);
+        append2(div12, div7);
+        append2(div7, p12);
+        append2(div7, t29);
+        append2(div7, p13);
+        append2(p13, t30);
+        append2(div12, t31);
+        append2(div12, div8);
+        append2(div8, p14);
+        append2(div8, t33);
+        append2(div8, p15);
+        append2(p15, t34);
+        append2(div12, t35);
+        append2(div12, div9);
+        append2(div9, p16);
+        append2(div9, t37);
+        append2(div9, p17);
+        append2(p17, t38);
+        append2(div12, t39);
+        append2(div12, div10);
+        append2(div10, p18);
+        append2(div10, t41);
+        append2(div10, p19);
+        append2(p19, t42);
+        append2(div12, t43);
+        if (if_block)
+          if_block.m(div12, null);
+        append2(div12, t44);
+        append2(div12, div11);
+        append2(div11, p20);
+        append2(div11, t46);
+        append2(div11, p21);
+        append2(p21, t47);
+        append2(div14, t48);
+        append2(div14, div13);
+        append2(div13, button1);
+        if (!mounted) {
+          dispose = [
+            listen(
+              button0,
+              "click",
+              /*click_handler_3*/
+              ctx[30]
+            ),
+            listen(
+              button1,
+              "click",
+              /*click_handler_4*/
+              ctx[31]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*selectedCalc*/
+        512 && t5_value !== (t5_value = /*selectedCalc*/
+        ctx2[9].ticket_number + ""))
+          set_data(t5, t5_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t9_value !== (t9_value = /*selectedCalc*/
+        ctx2[9].vehicle_number + ""))
+          set_data(t9, t9_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t13_value !== (t13_value = /*selectedCalc*/
+        ctx2[9].driver_name + ""))
+          set_data(t13, t13_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t17_value !== (t17_value = /*selectedCalc*/
+        ctx2[9].owner_name + ""))
+          set_data(t17, t17_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t21_value !== (t21_value = formatNumber(
+          /*selectedCalc*/
+          (ctx2[9].entry_weight / 1e3).toFixed(2)
+        ) + ""))
+          set_data(t21, t21_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t26_value !== (t26_value = /*selectedCalc*/
+        ctx2[9].exit_weight ? `${formatNumber(
+          /*selectedCalc*/
+          (ctx2[9].exit_weight / 1e3).toFixed(2)
+        )} kg` : "Belum ditentukan"))
+          set_data(t26, t26_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t30_value !== (t30_value = /*selectedCalc*/
+        ctx2[9].exit_weight ? `${formatNumber(
+          /*selectedCalc*/
+          (ctx2[9].net_weight / 1e3).toFixed(2)
+        )} kg` : "Belum ditentukan"))
+          set_data(t30, t30_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t34_value !== (t34_value = /*formatCurrency*/
+        ctx2[17](
+          /*selectedCalc*/
+          ctx2[9].price_per_kg
+        ) + ""))
+          set_data(t34, t34_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t38_value !== (t38_value = /*selectedCalc*/
+        (ctx2[9].exit_weight ? (
+          /*formatCurrency*/
+          ctx2[17](
+            /*selectedCalc*/
+            ctx2[9].total_price
+          )
+        ) : "Belum ditentukan") + ""))
+          set_data(t38, t38_value);
+        if (dirty[0] & /*selectedCalc*/
+        512 && t42_value !== (t42_value = /*formatDate*/
+        ctx2[18](
+          /*selectedCalc*/
+          ctx2[9].entry_datetime
+        ) + ""))
+          set_data(t42, t42_value);
+        if (
+          /*selectedCalc*/
+          ctx2[9].exit_datetime
+        ) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+          } else {
+            if_block = create_if_block_3(ctx2);
+            if_block.c();
+            if_block.m(div12, t44);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
+        if (dirty[0] & /*selectedCalc*/
+        512 && t47_value !== (t47_value = /*selectedCalc*/
+        (ctx2[9].types || "-") + ""))
+          set_data(t47, t47_value);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div15);
+        }
+        if (if_block)
+          if_block.d();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_if_block_3(ctx) {
+    let div;
+    let p0;
+    let t1;
+    let p1;
+    let t2_value = (
+      /*formatDate*/
+      ctx[18](
+        /*selectedCalc*/
+        ctx[9].exit_datetime
+      ) + ""
+    );
+    let t2;
+    return {
+      c() {
+        div = element("div");
+        p0 = element("p");
+        p0.textContent = "Waktu Keluar";
+        t1 = space();
+        p1 = element("p");
+        t2 = text(t2_value);
+        attr(p0, "class", "text-sm font-medium text-gray-500");
+        attr(p1, "class", "text-gray-900");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        append2(div, p0);
+        append2(div, t1);
+        append2(div, p1);
+        append2(p1, t2);
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*selectedCalc*/
+        512 && t2_value !== (t2_value = /*formatDate*/
+        ctx2[18](
+          /*selectedCalc*/
+          ctx2[9].exit_datetime
+        ) + ""))
+          set_data(t2, t2_value);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+      }
+    };
+  }
+  function create_if_block_1(ctx) {
+    let div12;
+    let div11;
+    let div0;
+    let h2;
+    let t1;
+    let button0;
+    let t2;
+    let div9;
+    let div1;
+    let label0;
+    let t4;
+    let input0;
+    let t5;
+    let div2;
+    let label1;
+    let t7;
+    let input1;
+    let t8;
+    let div3;
+    let label2;
+    let t10;
+    let input2;
+    let t11;
+    let div4;
+    let label3;
+    let t13;
+    let input3;
+    let t14;
+    let div5;
+    let label4;
+    let t16;
+    let input4;
+    let t17;
+    let div6;
+    let label5;
+    let t19;
+    let input5;
+    let t20;
+    let div7;
+    let label6;
+    let t22;
+    let input6;
+    let t23;
+    let div8;
+    let label7;
+    let t25;
+    let input7;
+    let t26;
+    let div10;
+    let button1;
+    let t28;
+    let button2;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        div12 = element("div");
+        div11 = element("div");
+        div0 = element("div");
+        h2 = element("h2");
+        h2.textContent = "Edit Transaksi";
+        t1 = space();
+        button0 = element("button");
+        button0.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+        t2 = space();
+        div9 = element("div");
+        div1 = element("div");
+        label0 = element("label");
+        label0.textContent = "No. Tiket";
+        t4 = space();
+        input0 = element("input");
+        t5 = space();
+        div2 = element("div");
+        label1 = element("label");
+        label1.textContent = "Kendaraan";
+        t7 = space();
+        input1 = element("input");
+        t8 = space();
+        div3 = element("div");
+        label2 = element("label");
+        label2.textContent = "Nama Sopir";
+        t10 = space();
+        input2 = element("input");
+        t11 = space();
+        div4 = element("div");
+        label3 = element("label");
+        label3.textContent = "Nama Pemilik";
+        t13 = space();
+        input3 = element("input");
+        t14 = space();
+        div5 = element("div");
+        label4 = element("label");
+        label4.textContent = "Berat Isi (kg)";
+        t16 = space();
+        input4 = element("input");
+        t17 = space();
+        div6 = element("div");
+        label5 = element("label");
+        label5.textContent = "Berat Kosong (kg)";
+        t19 = space();
+        input5 = element("input");
+        t20 = space();
+        div7 = element("div");
+        label6 = element("label");
+        label6.textContent = "Harga per Kg";
+        t22 = space();
+        input6 = element("input");
+        t23 = space();
+        div8 = element("div");
+        label7 = element("label");
+        label7.textContent = "Jenis Kendaraan";
+        t25 = space();
+        input7 = element("input");
+        t26 = space();
+        div10 = element("div");
+        button1 = element("button");
+        button1.textContent = "Batal";
+        t28 = space();
+        button2 = element("button");
+        button2.textContent = "Simpan";
+        attr(h2, "class", "text-xl font-bold text-gray-800");
+        attr(button0, "class", "text-gray-500 hover:text-gray-700");
+        attr(div0, "class", "flex justify-between items-center mb-6");
+        attr(label0, "for", "ticket_number");
+        attr(label0, "class", "block text-sm font-medium text-gray-700");
+        attr(input0, "type", "text");
+        attr(input0, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label1, "for", "vehicle_number");
+        attr(label1, "class", "block text-sm font-medium text-gray-700");
+        attr(input1, "type", "text");
+        attr(input1, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label2, "for", "driver_name");
+        attr(label2, "class", "block text-sm font-medium text-gray-700");
+        attr(input2, "type", "text");
+        attr(input2, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label3, "for", "owner_name");
+        attr(label3, "class", "block text-sm font-medium text-gray-700");
+        attr(input3, "type", "text");
+        attr(input3, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label4, "for", "entry_weight");
+        attr(label4, "class", "block text-sm font-medium text-gray-700");
+        attr(input4, "type", "text");
+        attr(input4, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label5, "for", "exit_weight");
+        attr(label5, "class", "block text-sm font-medium text-gray-700");
+        attr(input5, "type", "text");
+        attr(input5, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(input5, "placeholder", "Masukkan Berat Kosong");
+        attr(label6, "for", "price_per_kg");
+        attr(label6, "class", "block text-sm font-medium text-gray-700");
+        attr(input6, "type", "text");
+        attr(input6, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label7, "for", "types");
+        attr(label7, "class", "block text-sm font-medium text-gray-700");
+        attr(input7, "type", "text");
+        attr(input7, "class", "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(div9, "class", "grid grid-cols-2 gap-4");
+        attr(button1, "class", "bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md transition-colors");
+        attr(button2, "class", "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors");
+        attr(div10, "class", "mt-6 flex justify-end space-x-3");
+        attr(div11, "class", "bg-white rounded-lg max-w-2xl w-full p-6");
+        attr(div12, "class", "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50");
+      },
+      m(target, anchor) {
+        insert(target, div12, anchor);
+        append2(div12, div11);
+        append2(div11, div0);
+        append2(div0, h2);
+        append2(div0, t1);
+        append2(div0, button0);
+        append2(div11, t2);
+        append2(div11, div9);
+        append2(div9, div1);
+        append2(div1, label0);
+        append2(div1, t4);
+        append2(div1, input0);
+        set_input_value(
+          input0,
+          /*editingCalc*/
+          ctx[10].ticket_number
+        );
+        append2(div9, t5);
+        append2(div9, div2);
+        append2(div2, label1);
+        append2(div2, t7);
+        append2(div2, input1);
+        set_input_value(
+          input1,
+          /*editingCalc*/
+          ctx[10].vehicle_number
+        );
+        append2(div9, t8);
+        append2(div9, div3);
+        append2(div3, label2);
+        append2(div3, t10);
+        append2(div3, input2);
+        set_input_value(
+          input2,
+          /*editingCalc*/
+          ctx[10].driver_name
+        );
+        append2(div9, t11);
+        append2(div9, div4);
+        append2(div4, label3);
+        append2(div4, t13);
+        append2(div4, input3);
+        set_input_value(
+          input3,
+          /*editingCalc*/
+          ctx[10].owner_name
+        );
+        append2(div9, t14);
+        append2(div9, div5);
+        append2(div5, label4);
+        append2(div5, t16);
+        append2(div5, input4);
+        set_input_value(
+          input4,
+          /*editingCalc*/
+          ctx[10].entry_weight
+        );
+        append2(div9, t17);
+        append2(div9, div6);
+        append2(div6, label5);
+        append2(div6, t19);
+        append2(div6, input5);
+        set_input_value(
+          input5,
+          /*editingCalc*/
+          ctx[10].exit_weight
+        );
+        append2(div9, t20);
+        append2(div9, div7);
+        append2(div7, label6);
+        append2(div7, t22);
+        append2(div7, input6);
+        set_input_value(
+          input6,
+          /*editingCalc*/
+          ctx[10].price_per_kg
+        );
+        append2(div9, t23);
+        append2(div9, div8);
+        append2(div8, label7);
+        append2(div8, t25);
+        append2(div8, input7);
+        set_input_value(
+          input7,
+          /*editingCalc*/
+          ctx[10].types
+        );
+        append2(div11, t26);
+        append2(div11, div10);
+        append2(div10, button1);
+        append2(div10, t28);
+        append2(div10, button2);
+        if (!mounted) {
+          dispose = [
+            listen(
+              button0,
+              "click",
+              /*click_handler_5*/
+              ctx[32]
+            ),
+            listen(
+              input0,
+              "input",
+              /*input0_input_handler_1*/
+              ctx[33]
+            ),
+            listen(
+              input1,
+              "input",
+              /*input1_input_handler_1*/
+              ctx[34]
+            ),
+            listen(
+              input2,
+              "input",
+              /*input2_input_handler_1*/
+              ctx[35]
+            ),
+            listen(
+              input3,
+              "input",
+              /*input3_input_handler*/
+              ctx[36]
+            ),
+            listen(
+              input4,
+              "input",
+              /*input4_input_handler*/
+              ctx[37]
+            ),
+            listen(
+              input5,
+              "input",
+              /*input5_input_handler*/
+              ctx[38]
+            ),
+            listen(
+              input6,
+              "input",
+              /*input6_input_handler*/
+              ctx[39]
+            ),
+            listen(
+              input7,
+              "input",
+              /*input7_input_handler*/
+              ctx[40]
+            ),
+            listen(
+              button1,
+              "click",
+              /*click_handler_6*/
+              ctx[41]
+            ),
+            listen(
+              button2,
+              "click",
+              /*handleEdit*/
+              ctx[15]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*editingCalc*/
+        1024 && input0.value !== /*editingCalc*/
+        ctx2[10].ticket_number) {
+          set_input_value(
+            input0,
+            /*editingCalc*/
+            ctx2[10].ticket_number
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input1.value !== /*editingCalc*/
+        ctx2[10].vehicle_number) {
+          set_input_value(
+            input1,
+            /*editingCalc*/
+            ctx2[10].vehicle_number
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input2.value !== /*editingCalc*/
+        ctx2[10].driver_name) {
+          set_input_value(
+            input2,
+            /*editingCalc*/
+            ctx2[10].driver_name
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input3.value !== /*editingCalc*/
+        ctx2[10].owner_name) {
+          set_input_value(
+            input3,
+            /*editingCalc*/
+            ctx2[10].owner_name
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input4.value !== /*editingCalc*/
+        ctx2[10].entry_weight) {
+          set_input_value(
+            input4,
+            /*editingCalc*/
+            ctx2[10].entry_weight
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input5.value !== /*editingCalc*/
+        ctx2[10].exit_weight) {
+          set_input_value(
+            input5,
+            /*editingCalc*/
+            ctx2[10].exit_weight
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input6.value !== /*editingCalc*/
+        ctx2[10].price_per_kg) {
+          set_input_value(
+            input6,
+            /*editingCalc*/
+            ctx2[10].price_per_kg
+          );
+        }
+        if (dirty[0] & /*editingCalc*/
+        1024 && input7.value !== /*editingCalc*/
+        ctx2[10].types) {
+          set_input_value(
+            input7,
+            /*editingCalc*/
+            ctx2[10].types
+          );
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div12);
+        }
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_if_block2(ctx) {
+    let div14;
+    let div13;
+    let div1;
+    let div0;
+    let h1;
+    let t1;
+    let p0;
+    let t2;
+    let t3_value = (
+      /*selectedInvoice*/
+      ctx[12].ticket_number + ""
+    );
+    let t3;
+    let t4;
+    let button0;
+    let t5;
+    let div6;
+    let div3;
+    let t17;
+    let div5;
+    let h21;
+    let t19;
+    let div4;
+    let p6;
+    let t20_value = (
+      /*selectedInvoice*/
+      ctx[12].owner_name + ""
+    );
+    let t20;
+    let t21;
+    let p7;
+    let t22;
+    let t23_value = (
+      /*selectedInvoice*/
+      ctx[12].driver_name + ""
+    );
+    let t23;
+    let t24;
+    let p8;
+    let t25;
+    let t26_value = (
+      /*selectedInvoice*/
+      ctx[12].vehicle_number + ""
+    );
+    let t26;
+    let t27;
+    let p9;
+    let t28;
+    let t29_value = (
+      /*selectedInvoice*/
+      (ctx[12].types || "-") + ""
+    );
+    let t29;
+    let t30;
+    let div7;
+    let table;
+    let thead;
+    let t38;
+    let tbody;
+    let tr1;
+    let td0;
+    let t40;
+    let td1;
+    let t41_value = formatNumber(
+      /*selectedInvoice*/
+      (ctx[12].entry_weight / 1e3).toFixed(2)
+    ) + "";
+    let t41;
+    let t42;
+    let t43;
+    let td2;
+    let t45;
+    let td3;
+    let t47;
+    let tr2;
+    let td4;
+    let t49;
+    let td5;
+    let t50_value = (
+      /*selectedInvoice*/
+      ctx[12].exit_weight ? `${formatNumber(
+        /*selectedInvoice*/
+        (ctx[12].net_weight / 1e3).toFixed(2)
+      )} kg` : "Belum ditentukan"
+    );
+    let t50;
+    let t51;
+    let td6;
+    let t52_value = (
+      /*formatCurrency*/
+      ctx[17](
+        /*selectedInvoice*/
+        ctx[12].price_per_kg
+      ) + ""
+    );
+    let t52;
+    let t53;
+    let td7;
+    let t54_value = (
+      /*selectedInvoice*/
+      (ctx[12].exit_weight ? (
+        /*formatCurrency*/
+        ctx[17](
+          /*selectedInvoice*/
+          ctx[12].total_price
+        )
+      ) : "Belum ditentukan") + ""
+    );
+    let t54;
+    let t55;
+    let tfoot;
+    let tr3;
+    let th4;
+    let t57;
+    let td8;
+    let t58_value = (
+      /*selectedInvoice*/
+      (ctx[12].exit_weight ? (
+        /*formatCurrency*/
+        ctx[17](
+          /*selectedInvoice*/
+          ctx[12].total_price
+        )
+      ) : "Belum ditentukan") + ""
+    );
+    let t58;
+    let t59;
+    let div11;
+    let div9;
+    let h30;
+    let t61;
+    let div8;
+    let p10;
+    let t62;
+    let t63_value = (
+      /*formatFullDate*/
+      ctx[21](
+        /*selectedInvoice*/
+        ctx[12].entry_datetime
+      ) + ""
+    );
+    let t63;
+    let t64;
+    let p11;
+    let t65;
+    let t66_value = (
+      /*formatFullDate*/
+      ctx[21](
+        /*selectedInvoice*/
+        ctx[12].exit_datetime
+      ) + ""
+    );
+    let t66;
+    let t67;
+    let div10;
+    let t71;
+    let div12;
+    let button1;
+    let t73;
+    let button2;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        div14 = element("div");
+        div13 = element("div");
+        div1 = element("div");
+        div0 = element("div");
+        h1 = element("h1");
+        h1.textContent = "INVOICE";
+        t1 = space();
+        p0 = element("p");
+        t2 = text("No. Tiket: ");
+        t3 = text(t3_value);
+        t4 = space();
+        button0 = element("button");
+        button0.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+        t5 = space();
+        div6 = element("div");
+        div3 = element("div");
+        div3.innerHTML = `<h2 class="text-lg font-semibold text-gray-800 mb-4">Dari:</h2> <div class="text-gray-600"><p class="font-bold text-xl">UD. Puma Trans</p> <p>Jl. Raya Talok Turen</p> <p>Malang, 65171</p> <p>Telp : 081-252-088-879</p> <p>FAX : 082-330-796-572</p></div>`;
+        t17 = space();
+        div5 = element("div");
+        h21 = element("h2");
+        h21.textContent = "Kepada:";
+        t19 = space();
+        div4 = element("div");
+        p6 = element("p");
+        t20 = text(t20_value);
+        t21 = space();
+        p7 = element("p");
+        t22 = text("Sopir: ");
+        t23 = text(t23_value);
+        t24 = space();
+        p8 = element("p");
+        t25 = text("No. Kendaraan: ");
+        t26 = text(t26_value);
+        t27 = space();
+        p9 = element("p");
+        t28 = text("Jenis Kendaraan: ");
+        t29 = text(t29_value);
+        t30 = space();
+        div7 = element("div");
+        table = element("table");
+        thead = element("thead");
+        thead.innerHTML = `<tr class="bg-gray-50"><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th> <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat</th> <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Harga/Kg</th> <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th></tr>`;
+        t38 = space();
+        tbody = element("tbody");
+        tr1 = element("tr");
+        td0 = element("td");
+        td0.textContent = "Berat Kotor";
+        t40 = space();
+        td1 = element("td");
+        t41 = text(t41_value);
+        t42 = text(" kg");
+        t43 = space();
+        td2 = element("td");
+        td2.textContent = "-";
+        t45 = space();
+        td3 = element("td");
+        td3.textContent = "-";
+        t47 = space();
+        tr2 = element("tr");
+        td4 = element("td");
+        td4.textContent = "Berat Bersih";
+        t49 = space();
+        td5 = element("td");
+        t50 = text(t50_value);
+        t51 = space();
+        td6 = element("td");
+        t52 = text(t52_value);
+        t53 = space();
+        td7 = element("td");
+        t54 = text(t54_value);
+        t55 = space();
+        tfoot = element("tfoot");
+        tr3 = element("tr");
+        th4 = element("th");
+        th4.textContent = "Total";
+        t57 = space();
+        td8 = element("td");
+        t58 = text(t58_value);
+        t59 = space();
+        div11 = element("div");
+        div9 = element("div");
+        h30 = element("h3");
+        h30.textContent = "Informasi Transaksi:";
+        t61 = space();
+        div8 = element("div");
+        p10 = element("p");
+        t62 = text("Tanggal Masuk: ");
+        t63 = text(t63_value);
+        t64 = space();
+        p11 = element("p");
+        t65 = text("Tanggal Keluar: ");
+        t66 = text(t66_value);
+        t67 = space();
+        div10 = element("div");
+        div10.innerHTML = `<h3 class="text-sm font-medium text-gray-900 mb-2">Catatan:</h3> <p class="text-sm text-gray-600">Pembayaran dilakukan secara tunai atau transfer bank.
+            Harap simpan invoice ini sebagai bukti transaksi yang sah.</p>`;
+        t71 = space();
+        div12 = element("div");
+        button1 = element("button");
+        button1.textContent = "Tutup";
+        t73 = space();
+        button2 = element("button");
+        button2.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          Cetak Invoice`;
+        attr(h1, "class", "text-3xl font-bold text-gray-900");
+        attr(p0, "class", "text-gray-600 mt-1");
+        attr(button0, "class", "text-gray-500 hover:text-gray-700 svelte-1vfs7zv");
+        attr(div1, "class", "flex justify-between items-start mb-8");
+        attr(h21, "class", "text-lg font-semibold text-gray-800 mb-4");
+        attr(p6, "class", "font-bold");
+        attr(div4, "class", "text-gray-600");
+        attr(div6, "class", "grid grid-cols-2 gap-8 mb-8");
+        attr(td0, "class", "px-6 py-4 text-sm text-gray-900");
+        attr(td1, "class", "px-6 py-4 text-sm text-gray-900 text-right");
+        attr(td2, "class", "px-6 py-4 text-sm text-gray-500 text-right");
+        attr(td3, "class", "px-6 py-4 text-sm text-gray-500 text-right");
+        attr(td4, "class", "px-6 py-4 text-sm text-gray-900");
+        attr(td5, "class", "px-6 py-4 text-sm text-gray-900 text-right");
+        attr(td6, "class", "px-6 py-4 text-sm text-gray-900 text-right");
+        attr(td7, "class", "px-6 py-4 text-sm text-gray-900 text-right font-medium");
+        attr(tbody, "class", "divide-y divide-gray-200");
+        attr(th4, "scope", "row");
+        attr(th4, "colspan", "3");
+        attr(th4, "class", "px-6 py-3 text-right text-sm font-semibold text-gray-900");
+        attr(td8, "class", "px-6 py-3 text-right text-sm font-semibold text-gray-900");
+        attr(tfoot, "class", "bg-gray-50");
+        attr(table, "class", "w-full");
+        attr(div7, "class", "border rounded-lg overflow-hidden mb-8");
+        attr(h30, "class", "text-sm font-medium text-gray-900 mb-2");
+        attr(div8, "class", "text-sm text-gray-600");
+        attr(div11, "class", "grid grid-cols-2 gap-8 mb-8");
+        attr(button1, "class", "bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md transition-colors svelte-1vfs7zv");
+        attr(button2, "class", "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors flex items-center svelte-1vfs7zv");
+        attr(div12, "class", "flex justify-end space-x-3");
+        attr(div13, "class", "invoice-modal bg-white rounded-lg w-full max-w-4xl p-8 svelte-1vfs7zv");
+        attr(div14, "class", "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50");
+      },
+      m(target, anchor) {
+        insert(target, div14, anchor);
+        append2(div14, div13);
+        append2(div13, div1);
+        append2(div1, div0);
+        append2(div0, h1);
+        append2(div0, t1);
+        append2(div0, p0);
+        append2(p0, t2);
+        append2(p0, t3);
+        append2(div1, t4);
+        append2(div1, button0);
+        append2(div13, t5);
+        append2(div13, div6);
+        append2(div6, div3);
+        append2(div6, t17);
+        append2(div6, div5);
+        append2(div5, h21);
+        append2(div5, t19);
+        append2(div5, div4);
+        append2(div4, p6);
+        append2(p6, t20);
+        append2(div4, t21);
+        append2(div4, p7);
+        append2(p7, t22);
+        append2(p7, t23);
+        append2(div4, t24);
+        append2(div4, p8);
+        append2(p8, t25);
+        append2(p8, t26);
+        append2(div4, t27);
+        append2(div4, p9);
+        append2(p9, t28);
+        append2(p9, t29);
+        append2(div13, t30);
+        append2(div13, div7);
+        append2(div7, table);
+        append2(table, thead);
+        append2(table, t38);
+        append2(table, tbody);
+        append2(tbody, tr1);
+        append2(tr1, td0);
+        append2(tr1, t40);
+        append2(tr1, td1);
+        append2(td1, t41);
+        append2(td1, t42);
+        append2(tr1, t43);
+        append2(tr1, td2);
+        append2(tr1, t45);
+        append2(tr1, td3);
+        append2(tbody, t47);
+        append2(tbody, tr2);
+        append2(tr2, td4);
+        append2(tr2, t49);
+        append2(tr2, td5);
+        append2(td5, t50);
+        append2(tr2, t51);
+        append2(tr2, td6);
+        append2(td6, t52);
+        append2(tr2, t53);
+        append2(tr2, td7);
+        append2(td7, t54);
+        append2(table, t55);
+        append2(table, tfoot);
+        append2(tfoot, tr3);
+        append2(tr3, th4);
+        append2(tr3, t57);
+        append2(tr3, td8);
+        append2(td8, t58);
+        append2(div13, t59);
+        append2(div13, div11);
+        append2(div11, div9);
+        append2(div9, h30);
+        append2(div9, t61);
+        append2(div9, div8);
+        append2(div8, p10);
+        append2(p10, t62);
+        append2(p10, t63);
+        append2(div8, t64);
+        append2(div8, p11);
+        append2(p11, t65);
+        append2(p11, t66);
+        append2(div11, t67);
+        append2(div11, div10);
+        append2(div13, t71);
+        append2(div13, div12);
+        append2(div12, button1);
+        append2(div12, t73);
+        append2(div12, button2);
+        if (!mounted) {
+          dispose = [
+            listen(
+              button0,
+              "click",
+              /*click_handler_7*/
+              ctx[42]
+            ),
+            listen(
+              button1,
+              "click",
+              /*click_handler_8*/
+              ctx[43]
+            ),
+            listen(
+              button2,
+              "click",
+              /*click_handler_9*/
+              ctx[44]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t3_value !== (t3_value = /*selectedInvoice*/
+        ctx2[12].ticket_number + ""))
+          set_data(t3, t3_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t20_value !== (t20_value = /*selectedInvoice*/
+        ctx2[12].owner_name + ""))
+          set_data(t20, t20_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t23_value !== (t23_value = /*selectedInvoice*/
+        ctx2[12].driver_name + ""))
+          set_data(t23, t23_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t26_value !== (t26_value = /*selectedInvoice*/
+        ctx2[12].vehicle_number + ""))
+          set_data(t26, t26_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t29_value !== (t29_value = /*selectedInvoice*/
+        (ctx2[12].types || "-") + ""))
+          set_data(t29, t29_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t41_value !== (t41_value = formatNumber(
+          /*selectedInvoice*/
+          (ctx2[12].entry_weight / 1e3).toFixed(2)
+        ) + ""))
+          set_data(t41, t41_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t50_value !== (t50_value = /*selectedInvoice*/
+        ctx2[12].exit_weight ? `${formatNumber(
+          /*selectedInvoice*/
+          (ctx2[12].net_weight / 1e3).toFixed(2)
+        )} kg` : "Belum ditentukan"))
+          set_data(t50, t50_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t52_value !== (t52_value = /*formatCurrency*/
+        ctx2[17](
+          /*selectedInvoice*/
+          ctx2[12].price_per_kg
+        ) + ""))
+          set_data(t52, t52_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t54_value !== (t54_value = /*selectedInvoice*/
+        (ctx2[12].exit_weight ? (
+          /*formatCurrency*/
+          ctx2[17](
+            /*selectedInvoice*/
+            ctx2[12].total_price
+          )
+        ) : "Belum ditentukan") + ""))
+          set_data(t54, t54_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t58_value !== (t58_value = /*selectedInvoice*/
+        (ctx2[12].exit_weight ? (
+          /*formatCurrency*/
+          ctx2[17](
+            /*selectedInvoice*/
+            ctx2[12].total_price
+          )
+        ) : "Belum ditentukan") + ""))
+          set_data(t58, t58_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t63_value !== (t63_value = /*formatFullDate*/
+        ctx2[21](
+          /*selectedInvoice*/
+          ctx2[12].entry_datetime
+        ) + ""))
+          set_data(t63, t63_value);
+        if (dirty[0] & /*selectedInvoice*/
+        4096 && t66_value !== (t66_value = /*formatFullDate*/
+        ctx2[21](
+          /*selectedInvoice*/
+          ctx2[12].exit_datetime
+        ) + ""))
+          set_data(t66, t66_value);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div14);
+        }
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_fragment10(ctx) {
+    let div26;
+    let div0;
+    let t3;
+    let div19;
+    let div6;
+    let div5;
+    let div3;
+    let p1;
+    let t5;
+    let div1;
+    let p2;
+    let t6_value = (
+      /*totals*/
+      ctx[13].totalTransactions + ""
+    );
+    let t6;
+    let t7;
+    let p3;
+    let t9;
+    let div2;
+    let span0;
+    let t10_value = (
+      /*totals*/
+      ctx[13].completedTransactions + ""
+    );
+    let t10;
+    let t11;
+    let span1;
+    let t12_value = (
+      /*totals*/
+      ctx[13].pendingTransactions + ""
+    );
+    let t12;
+    let t13;
+    let t14;
+    let div4;
+    let t15;
+    let div12;
+    let div11;
+    let div9;
+    let p4;
+    let t17;
+    let div7;
+    let p5;
+    let t18_value = (
+      /*totals*/
+      ctx[13].totalWeight.toLocaleString() + ""
+    );
+    let t18;
+    let t19;
+    let p6;
+    let t21;
+    let div8;
+    let t23;
+    let div10;
+    let t24;
+    let div18;
+    let div17;
+    let div15;
+    let p7;
+    let t26;
+    let div13;
+    let p8;
+    let t27_value = (
+      /*formatCurrency*/
+      ctx[17](
+        /*totals*/
+        ctx[13].totalAmount
+      ) + ""
+    );
+    let t27;
+    let t28;
+    let div14;
+    let t30;
+    let div16;
+    let t31;
+    let div25;
+    let div24;
+    let div20;
+    let label0;
+    let t33;
+    let select;
+    let t34;
+    let div21;
+    let label1;
+    let t36;
+    let input0;
+    let t37;
+    let div22;
+    let label2;
+    let t39;
+    let input1;
+    let t40;
+    let div23;
+    let label3;
+    let t42;
+    let input2;
+    let t43;
+    let t44;
+    let t45;
+    let t46;
+    let if_block3_anchor;
+    let mounted;
+    let dispose;
+    let each_value_1 = ensure_array_like(
+      /*filterOptions*/
+      ctx[14]
+    );
+    let each_blocks = [];
+    for (let i = 0; i < each_value_1.length; i += 1) {
+      each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+    }
+    function select_block_type(ctx2, dirty) {
+      if (
+        /*loading*/
+        ctx2[7]
+      )
+        return create_if_block_4;
+      return create_else_block;
+    }
+    let current_block_type = select_block_type(ctx, [-1, -1]);
+    let if_block0 = current_block_type(ctx);
+    let if_block1 = (
+      /*showModal*/
+      ctx[8] && /*selectedCalc*/
+      ctx[9] && create_if_block_2(ctx)
+    );
+    let if_block2 = (
+      /*showEditModal*/
+      ctx[1] && /*editingCalc*/
+      ctx[10] && create_if_block_1(ctx)
+    );
+    let if_block3 = (
+      /*showInvoiceModal*/
+      ctx[11] && /*selectedInvoice*/
+      ctx[12] && create_if_block2(ctx)
+    );
+    return {
+      c() {
+        div26 = element("div");
+        div0 = element("div");
+        div0.innerHTML = `<h2 class="text-2xl font-bold text-gray-800">Riwayat Kalkulasi</h2> <p class="text-gray-600">Catatan seluruh transaksi penimbangan</p>`;
+        t3 = space();
+        div19 = element("div");
+        div6 = element("div");
+        div5 = element("div");
+        div3 = element("div");
+        p1 = element("p");
+        p1.textContent = "Total Transaksi";
+        t5 = space();
+        div1 = element("div");
+        p2 = element("p");
+        t6 = text(t6_value);
+        t7 = space();
+        p3 = element("p");
+        p3.textContent = "transaksi";
+        t9 = space();
+        div2 = element("div");
+        span0 = element("span");
+        t10 = text(t10_value);
+        t11 = text(" selesai,\n            ");
+        span1 = element("span");
+        t12 = text(t12_value);
+        t13 = text(" pending");
+        t14 = space();
+        div4 = element("div");
+        div4.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>`;
+        t15 = space();
+        div12 = element("div");
+        div11 = element("div");
+        div9 = element("div");
+        p4 = element("p");
+        p4.textContent = "Total Berat";
+        t17 = space();
+        div7 = element("div");
+        p5 = element("p");
+        t18 = text(t18_value);
+        t19 = space();
+        p6 = element("p");
+        p6.textContent = "kg";
+        t21 = space();
+        div8 = element("div");
+        div8.textContent = "Berat total dari semua transaksi";
+        t23 = space();
+        div10 = element("div");
+        div10.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>`;
+        t24 = space();
+        div18 = element("div");
+        div17 = element("div");
+        div15 = element("div");
+        p7 = element("p");
+        p7.textContent = "Total Pendapatan";
+        t26 = space();
+        div13 = element("div");
+        p8 = element("p");
+        t27 = text(t27_value);
+        t28 = space();
+        div14 = element("div");
+        div14.textContent = "Total nilai dari semua transaksi";
+        t30 = space();
+        div16 = element("div");
+        div16.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        t31 = space();
+        div25 = element("div");
+        div24 = element("div");
+        div20 = element("div");
+        label0 = element("label");
+        label0.textContent = "Cari Berdasarkan";
+        t33 = space();
+        select = element("select");
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].c();
+        }
+        t34 = space();
+        div21 = element("div");
+        label1 = element("label");
+        label1.textContent = "Kata Kunci";
+        t36 = space();
+        input0 = element("input");
+        t37 = space();
+        div22 = element("div");
+        label2 = element("label");
+        label2.textContent = "Dari Tanggal";
+        t39 = space();
+        input1 = element("input");
+        t40 = space();
+        div23 = element("div");
+        label3 = element("label");
+        label3.textContent = "Sampai Tanggal";
+        t42 = space();
+        input2 = element("input");
+        t43 = space();
+        if_block0.c();
+        t44 = space();
+        if (if_block1)
+          if_block1.c();
+        t45 = space();
+        if (if_block2)
+          if_block2.c();
+        t46 = space();
+        if (if_block3)
+          if_block3.c();
+        if_block3_anchor = empty();
+        attr(div0, "class", "mb-8");
+        attr(p1, "class", "text-sm font-medium text-blue-600");
+        attr(p2, "class", "text-2xl font-semibold text-blue-900");
+        attr(p3, "class", "ml-2 text-sm text-blue-600");
+        attr(div1, "class", "mt-2 flex items-baseline");
+        attr(span0, "class", "font-medium");
+        attr(span1, "class", "font-medium");
+        attr(div2, "class", "mt-1 text-xs text-blue-600");
+        attr(div4, "class", "p-3 bg-blue-100 rounded-lg");
+        attr(div5, "class", "flex items-center justify-between");
+        attr(div6, "class", "bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6");
+        attr(p4, "class", "text-sm font-medium text-green-600");
+        attr(p5, "class", "text-2xl font-semibold text-green-900");
+        attr(p6, "class", "ml-2 text-sm text-green-600");
+        attr(div7, "class", "mt-2 flex items-baseline");
+        attr(div8, "class", "mt-1 text-xs text-green-600");
+        attr(div10, "class", "p-3 bg-green-100 rounded-lg");
+        attr(div11, "class", "flex items-center justify-between");
+        attr(div12, "class", "bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6");
+        attr(p7, "class", "text-sm font-medium text-purple-600");
+        attr(p8, "class", "text-2xl font-semibold text-purple-900");
+        attr(div13, "class", "mt-2 flex items-baseline");
+        attr(div14, "class", "mt-1 text-xs text-purple-600");
+        attr(div16, "class", "p-3 bg-purple-100 rounded-lg");
+        attr(div17, "class", "flex items-center justify-between");
+        attr(div18, "class", "bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6");
+        attr(div19, "class", "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8");
+        attr(label0, "for", "filterBy");
+        attr(label0, "class", "block text-sm font-medium text-gray-700 mb-1");
+        attr(select, "id", "filterBy");
+        attr(select, "class", "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        if (
+          /*filterBy*/
+          ctx[3] === void 0
+        )
+          add_render_callback(() => (
+            /*select_change_handler*/
+            ctx[23].call(select)
+          ));
+        attr(label1, "for", "searchInput");
+        attr(label1, "class", "block text-sm font-medium text-gray-700 mb-1");
+        attr(input0, "id", "searchInput");
+        attr(input0, "type", "text");
+        attr(input0, "placeholder", "Cari...");
+        attr(input0, "class", "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label2, "for", "dateFrom");
+        attr(label2, "class", "block text-sm font-medium text-gray-700 mb-1");
+        attr(input1, "id", "dateFrom");
+        attr(input1, "type", "date");
+        attr(input1, "class", "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(label3, "for", "dateTo");
+        attr(label3, "class", "block text-sm font-medium text-gray-700 mb-1");
+        attr(input2, "id", "dateTo");
+        attr(input2, "type", "date");
+        attr(input2, "class", "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500");
+        attr(div24, "class", "grid grid-cols-1 md:grid-cols-4 gap-4");
+        attr(div25, "class", "bg-white p-4 rounded-lg shadow-sm mb-6");
+        attr(div26, "class", "mt-12 bg-white rounded-xl shadow-lg p-8");
+      },
+      m(target, anchor) {
+        insert(target, div26, anchor);
+        append2(div26, div0);
+        append2(div26, t3);
+        append2(div26, div19);
+        append2(div19, div6);
+        append2(div6, div5);
+        append2(div5, div3);
+        append2(div3, p1);
+        append2(div3, t5);
+        append2(div3, div1);
+        append2(div1, p2);
+        append2(p2, t6);
+        append2(div1, t7);
+        append2(div1, p3);
+        append2(div3, t9);
+        append2(div3, div2);
+        append2(div2, span0);
+        append2(span0, t10);
+        append2(div2, t11);
+        append2(div2, span1);
+        append2(span1, t12);
+        append2(div2, t13);
+        append2(div5, t14);
+        append2(div5, div4);
+        append2(div19, t15);
+        append2(div19, div12);
+        append2(div12, div11);
+        append2(div11, div9);
+        append2(div9, p4);
+        append2(div9, t17);
+        append2(div9, div7);
+        append2(div7, p5);
+        append2(p5, t18);
+        append2(div7, t19);
+        append2(div7, p6);
+        append2(div9, t21);
+        append2(div9, div8);
+        append2(div11, t23);
+        append2(div11, div10);
+        append2(div19, t24);
+        append2(div19, div18);
+        append2(div18, div17);
+        append2(div17, div15);
+        append2(div15, p7);
+        append2(div15, t26);
+        append2(div15, div13);
+        append2(div13, p8);
+        append2(p8, t27);
+        append2(div15, t28);
+        append2(div15, div14);
+        append2(div17, t30);
+        append2(div17, div16);
+        append2(div26, t31);
+        append2(div26, div25);
+        append2(div25, div24);
+        append2(div24, div20);
+        append2(div20, label0);
+        append2(div20, t33);
+        append2(div20, select);
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          if (each_blocks[i]) {
+            each_blocks[i].m(select, null);
+          }
+        }
+        select_option(
+          select,
+          /*filterBy*/
+          ctx[3],
+          true
+        );
+        append2(div24, t34);
+        append2(div24, div21);
+        append2(div21, label1);
+        append2(div21, t36);
+        append2(div21, input0);
+        set_input_value(
+          input0,
+          /*searchQuery*/
+          ctx[2]
+        );
+        append2(div24, t37);
+        append2(div24, div22);
+        append2(div22, label2);
+        append2(div22, t39);
+        append2(div22, input1);
+        set_input_value(
+          input1,
+          /*dateFrom*/
+          ctx[4]
+        );
+        append2(div24, t40);
+        append2(div24, div23);
+        append2(div23, label3);
+        append2(div23, t42);
+        append2(div23, input2);
+        set_input_value(
+          input2,
+          /*dateTo*/
+          ctx[5]
+        );
+        append2(div26, t43);
+        if_block0.m(div26, null);
+        insert(target, t44, anchor);
+        if (if_block1)
+          if_block1.m(target, anchor);
+        insert(target, t45, anchor);
+        if (if_block2)
+          if_block2.m(target, anchor);
+        insert(target, t46, anchor);
+        if (if_block3)
+          if_block3.m(target, anchor);
+        insert(target, if_block3_anchor, anchor);
+        if (!mounted) {
+          dispose = [
+            listen(
+              select,
+              "change",
+              /*select_change_handler*/
+              ctx[23]
+            ),
+            listen(
+              input0,
+              "input",
+              /*input0_input_handler*/
+              ctx[24]
+            ),
+            listen(
+              input1,
+              "input",
+              /*input1_input_handler*/
+              ctx[25]
+            ),
+            listen(
+              input2,
+              "input",
+              /*input2_input_handler*/
+              ctx[26]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*totals*/
+        8192 && t6_value !== (t6_value = /*totals*/
+        ctx2[13].totalTransactions + ""))
+          set_data(t6, t6_value);
+        if (dirty[0] & /*totals*/
+        8192 && t10_value !== (t10_value = /*totals*/
+        ctx2[13].completedTransactions + ""))
+          set_data(t10, t10_value);
+        if (dirty[0] & /*totals*/
+        8192 && t12_value !== (t12_value = /*totals*/
+        ctx2[13].pendingTransactions + ""))
+          set_data(t12, t12_value);
+        if (dirty[0] & /*totals*/
+        8192 && t18_value !== (t18_value = /*totals*/
+        ctx2[13].totalWeight.toLocaleString() + ""))
+          set_data(t18, t18_value);
+        if (dirty[0] & /*totals*/
+        8192 && t27_value !== (t27_value = /*formatCurrency*/
+        ctx2[17](
+          /*totals*/
+          ctx2[13].totalAmount
+        ) + ""))
+          set_data(t27, t27_value);
+        if (dirty[0] & /*filterOptions*/
+        16384) {
+          each_value_1 = ensure_array_like(
+            /*filterOptions*/
+            ctx2[14]
+          );
+          let i;
+          for (i = 0; i < each_value_1.length; i += 1) {
+            const child_ctx = get_each_context_1(ctx2, each_value_1, i);
+            if (each_blocks[i]) {
+              each_blocks[i].p(child_ctx, dirty);
+            } else {
+              each_blocks[i] = create_each_block_1(child_ctx);
+              each_blocks[i].c();
+              each_blocks[i].m(select, null);
+            }
+          }
+          for (; i < each_blocks.length; i += 1) {
+            each_blocks[i].d(1);
+          }
+          each_blocks.length = each_value_1.length;
+        }
+        if (dirty[0] & /*filterBy, filterOptions*/
+        16392) {
+          select_option(
+            select,
+            /*filterBy*/
+            ctx2[3]
+          );
+        }
+        if (dirty[0] & /*searchQuery*/
+        4 && input0.value !== /*searchQuery*/
+        ctx2[2]) {
+          set_input_value(
+            input0,
+            /*searchQuery*/
+            ctx2[2]
+          );
+        }
+        if (dirty[0] & /*dateFrom*/
+        16) {
+          set_input_value(
+            input1,
+            /*dateFrom*/
+            ctx2[4]
+          );
+        }
+        if (dirty[0] & /*dateTo*/
+        32) {
+          set_input_value(
+            input2,
+            /*dateTo*/
+            ctx2[5]
+          );
+        }
+        if (current_block_type === (current_block_type = select_block_type(ctx2, dirty)) && if_block0) {
+          if_block0.p(ctx2, dirty);
+        } else {
+          if_block0.d(1);
+          if_block0 = current_block_type(ctx2);
+          if (if_block0) {
+            if_block0.c();
+            if_block0.m(div26, null);
+          }
+        }
+        if (
+          /*showModal*/
+          ctx2[8] && /*selectedCalc*/
+          ctx2[9]
+        ) {
+          if (if_block1) {
+            if_block1.p(ctx2, dirty);
+          } else {
+            if_block1 = create_if_block_2(ctx2);
+            if_block1.c();
+            if_block1.m(t45.parentNode, t45);
+          }
+        } else if (if_block1) {
+          if_block1.d(1);
+          if_block1 = null;
+        }
+        if (
+          /*showEditModal*/
+          ctx2[1] && /*editingCalc*/
+          ctx2[10]
+        ) {
+          if (if_block2) {
+            if_block2.p(ctx2, dirty);
+          } else {
+            if_block2 = create_if_block_1(ctx2);
+            if_block2.c();
+            if_block2.m(t46.parentNode, t46);
+          }
+        } else if (if_block2) {
+          if_block2.d(1);
+          if_block2 = null;
+        }
+        if (
+          /*showInvoiceModal*/
+          ctx2[11] && /*selectedInvoice*/
+          ctx2[12]
+        ) {
+          if (if_block3) {
+            if_block3.p(ctx2, dirty);
+          } else {
+            if_block3 = create_if_block2(ctx2);
+            if_block3.c();
+            if_block3.m(if_block3_anchor.parentNode, if_block3_anchor);
+          }
+        } else if (if_block3) {
+          if_block3.d(1);
+          if_block3 = null;
+        }
+      },
+      i: noop2,
+      o: noop2,
+      d(detaching) {
+        if (detaching) {
+          detach(div26);
+          detach(t44);
+          detach(t45);
+          detach(t46);
+          detach(if_block3_anchor);
+        }
+        destroy_each(each_blocks, detaching);
+        if_block0.d();
+        if (if_block1)
+          if_block1.d(detaching);
+        if (if_block2)
+          if_block2.d(detaching);
+        if (if_block3)
+          if_block3.d(detaching);
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function formatNumber(value) {
+    if (!value)
+      return "";
+    if (typeof value === "number") {
+      const formattedValue = value.toFixed(2);
+      const [whole2, decimal2] = formattedValue.split(".");
+      const formattedWhole2 = whole2.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return decimal2 ? `${formattedWhole2},${decimal2}` : formattedWhole2;
+    }
+    const [whole, decimal] = value.toString().split(".");
+    const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+  }
+  function unformatNumber(value) {
+    if (!value)
+      return 0;
+    return parseFloat(value.toString().replace(/,/g, ""));
+  }
+  function calculateTotals(transactions) {
+    return transactions.reduce(
+      (acc, curr) => {
+        return {
+          totalTransactions: acc.totalTransactions + 1,
+          totalWeight: acc.totalWeight + (curr.rounded_weight || 0),
+          totalAmount: acc.totalAmount + (curr.total_price || 0),
+          completedTransactions: acc.completedTransactions + (curr.exit_weight ? 1 : 0),
+          pendingTransactions: acc.pendingTransactions + (curr.exit_weight ? 0 : 1)
+        };
+      },
+      {
+        totalTransactions: 0,
+        totalWeight: 0,
+        totalAmount: 0,
+        completedTransactions: 0,
+        pendingTransactions: 0
+      }
+    );
+  }
+  function instance8($$self, $$props, $$invalidate) {
+    let totals;
+    let calculations = [];
+    let filteredCalculations = [];
+    let loading = true;
+    let showModal = false;
+    let selectedCalc = null;
+    let showEditModal = false;
+    let editingCalc = null;
+    let showInvoiceModal = false;
+    let selectedInvoice = null;
+    let socket = null;
+    let searchQuery = "";
+    let filterBy = "ticket_number";
+    let dateFrom = "";
+    let dateTo = "";
+    const filterOptions = [
+      {
+        value: "ticket_number",
+        label: "No. Tiket"
+      },
+      {
+        value: "vehicle_number",
+        label: "No. Kendaraan"
+      },
+      {
+        value: "driver_name",
+        label: "Nama Sopir"
+      },
+      {
+        value: "owner_name",
+        label: "Nama Pemilik"
+      }
+    ];
+    const handleSearch = () => {
+      $$invalidate(0, filteredCalculations = calculations.filter((calc) => {
+        const matchesSearch = calc[filterBy].toLowerCase().includes(searchQuery.toLowerCase());
+        const entryDate = new Date(parseInt(calc.entry_datetime));
+        const fromDate = dateFrom ? new Date(dateFrom) : null;
+        const toDate = dateTo ? new Date(dateTo) : null;
+        if (fromDate)
+          fromDate.setHours(0, 0, 0, 0);
+        if (toDate)
+          toDate.setHours(23, 59, 59, 999);
+        const matchesDateRange = !fromDate || !toDate ? true : entryDate >= fromDate && entryDate <= toDate;
+        return matchesSearch && matchesDateRange;
+      }));
+    };
+    function connectWebSocket() {
+      console.log("\n--- Edit Modal WebSocket ---");
+      console.log("Attempting to connect to:", WS_URL);
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        console.log("WebSocket already connected");
+        return;
+      }
+      socket = new WebSocket(WS_URL);
+      socket.onopen = () => {
+        console.log("WebSocket connected successfully");
+      };
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log("\n--- Edit Modal Received Data ---");
+          console.log("Raw data:", data);
+          console.log("Modal state:", {
+            showEditModal,
+            editingCalc: !!editingCalc
+          });
+          if (data.type === "weight" && data.weight) {
+            const weight = Math.abs(parseFloat(data.weight));
+            console.log("Processing weight:", weight);
+            processWeight(weight);
+          }
+        } catch (err) {
+          console.error("Error processing WebSocket data:", err);
+        }
+      };
+      socket.onerror = (error) => {
+        console.error("\n--- Edit Modal WebSocket Error ---");
+        console.error(error);
+      };
+      socket.onclose = () => {
+        console.log("\n--- Edit Modal WebSocket Closed ---");
+        socket = null;
+      };
+    }
+    function disconnectWebSocket() {
+      console.log("\n--- Edit Modal Disconnecting ---");
+      if (socket) {
+        console.log("Closing WebSocket connection");
+        socket.close();
+        socket = null;
+      } else {
+        console.log("No active WebSocket connection to close");
+      }
+    }
+    function processWeight(weight) {
+      console.log("\n--- Processing Weight in Edit Modal ---");
+      console.log("Input weight:", weight);
+      console.log("Modal state:", {
+        showEditModal,
+        editingCalc: !!editingCalc
+      });
+      const MIN_WEIGHT_THRESHOLD = 100;
+      if (weight >= MIN_WEIGHT_THRESHOLD && showEditModal && editingCalc) {
+        const currentWeight = unformatNumber(editingCalc.exit_weight || "0");
+        console.log("Current exit weight:", currentWeight);
+        if (weight !== currentWeight) {
+          console.log("Updating exit weight from", currentWeight, "to", weight);
+          $$invalidate(10, editingCalc.exit_weight = formatNumber((weight / 1e3).toFixed(2)), editingCalc);
+          console.log("New formatted exit weight:", editingCalc.exit_weight);
+        } else {
+          console.log("Weight unchanged, skipping update");
+        }
+      } else {
+        console.log("Skipping weight update. Conditions:", {
+          aboveThreshold: weight >= MIN_WEIGHT_THRESHOLD,
+          modalOpen: showEditModal,
+          hasEditingCalc: !!editingCalc
+        });
+      }
+    }
+    const handleEdit = async () => {
+      try {
+        const entryWeightGrams = parseFloat(editingCalc.entry_weight.toString().replace(",", ".")) * 1e3;
+        const exitWeightGrams = editingCalc.exit_weight ? parseFloat(editingCalc.exit_weight.toString().replace(",", ".")) * 1e3 : null;
+        const netWeight = exitWeightGrams ? entryWeightGrams - exitWeightGrams : entryWeightGrams;
+        const response = await axios_default.post(`/api/calculations/edit`, {
+          id: editingCalc.id,
+          ticketNumber: editingCalc.ticket_number,
+          vehicleNumber: editingCalc.vehicle_number,
+          driverName: editingCalc.driver_name,
+          ownerName: editingCalc.owner_name,
+          entryWeight: entryWeightGrams,
+          exitWeight: exitWeightGrams,
+          netWeight,
+          // Add net weight to payload
+          pricePerKg: parseFloat(editingCalc.price_per_kg.toString().replace(/,/g, "")),
+          entryDateTime: editingCalc.entry_datetime,
+          userId: editingCalc.user_id,
+          types: editingCalc.types
+        });
+        if (response.data.success) {
+          const index = calculations.findIndex((c) => c.id === editingCalc.id);
+          $$invalidate(6, calculations[index] = response.data.data, calculations);
+          $$invalidate(0, filteredCalculations = [...calculations]);
+          $$invalidate(1, showEditModal = false);
+          $$invalidate(10, editingCalc = null);
+          Toast("Edit berhasil", "success");
+        }
+      } catch (error) {
+        console.error("Failed to update calculation:", error);
+        Toast("Gagal mengupdate data", "error");
+      }
+    };
+    const openEditModal = (calc) => {
+      console.log("\n--- Opening Edit Modal ---");
+      console.log("Original calc:", calc);
+      $$invalidate(10, editingCalc = {
+        ...calc,
+        entry_weight: formatNumber(calc.entry_weight / 1e3),
+        exit_weight: calc.exit_weight ? formatNumber(calc.exit_weight / 1e3) : null,
+        price_per_kg: calc.price_per_kg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      });
+      console.log("Formatted editingCalc:", editingCalc);
+      $$invalidate(1, showEditModal = true);
+      console.log("Modal opened, connecting WebSocket");
+      connectWebSocket();
+    };
+    onDestroy(() => {
+      disconnectWebSocket();
+    });
+    const formatCurrency = (amount) => {
+      const formattedAmount = parseFloat(amount).toFixed(0);
+      return `Rp ${formattedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    };
+    const formatDate = (timestamp) => {
+      if (!timestamp || isNaN(timestamp)) {
+        return "Belum ditentukan";
+      }
+      const date = new Date(parseInt(timestamp));
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+    const showDetails = (calc) => {
+      $$invalidate(9, selectedCalc = calc);
+      $$invalidate(8, showModal = true);
+    };
+    async function refreshData() {
+      try {
+        const response = await axios_default.get("/api/calculations");
+        $$invalidate(6, calculations = response.data.data);
+        $$invalidate(0, filteredCalculations = calculations);
+      } catch (error) {
+        console.error("Failed to fetch calculations:", error);
+        Toast("Gagal mengambil data", "error");
+      }
+    }
+    onMount(async () => {
+      try {
+        const response = await axios_default.get("/api/calculations");
+        $$invalidate(6, calculations = response.data.data);
+        $$invalidate(0, filteredCalculations = calculations);
+      } catch (error) {
+        console.error("Failed to fetch calculations:", error);
+        Toast("Gagal mengambil data", "error");
+      } finally {
+        $$invalidate(7, loading = false);
+      }
+    });
+    const generateInvoice = (calc) => {
+      $$invalidate(12, selectedInvoice = calc);
+      $$invalidate(11, showInvoiceModal = true);
+    };
+    const formatFullDate = (timestamp) => {
+      if (!timestamp || isNaN(timestamp)) {
+        return "Belum ditentukan";
+      }
+      const date = new Date(parseInt(timestamp));
+      const hari = date.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+      const waktu = date.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      });
+      return `${hari} - ${waktu} WIB`;
+    };
+    function select_change_handler() {
+      filterBy = select_value(this);
+      $$invalidate(3, filterBy);
+      $$invalidate(14, filterOptions);
+    }
+    function input0_input_handler() {
+      searchQuery = this.value;
+      $$invalidate(2, searchQuery);
+    }
+    function input1_input_handler() {
+      dateFrom = this.value;
+      $$invalidate(4, dateFrom);
+    }
+    function input2_input_handler() {
+      dateTo = this.value;
+      $$invalidate(5, dateTo);
+    }
+    const click_handler = (calc) => showDetails(calc);
+    const click_handler_1 = (calc) => openEditModal(calc);
+    const click_handler_2 = (calc) => generateInvoice(calc);
+    const click_handler_3 = () => $$invalidate(8, showModal = false);
+    const click_handler_4 = () => $$invalidate(8, showModal = false);
+    const click_handler_5 = () => $$invalidate(1, showEditModal = false);
+    function input0_input_handler_1() {
+      editingCalc.ticket_number = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input1_input_handler_1() {
+      editingCalc.vehicle_number = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input2_input_handler_1() {
+      editingCalc.driver_name = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input3_input_handler() {
+      editingCalc.owner_name = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input4_input_handler() {
+      editingCalc.entry_weight = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input5_input_handler() {
+      editingCalc.exit_weight = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input6_input_handler() {
+      editingCalc.price_per_kg = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    function input7_input_handler() {
+      editingCalc.types = this.value;
+      $$invalidate(10, editingCalc);
+    }
+    const click_handler_6 = () => $$invalidate(1, showEditModal = false);
+    const click_handler_7 = () => $$invalidate(11, showInvoiceModal = false);
+    const click_handler_8 = () => $$invalidate(11, showInvoiceModal = false);
+    const click_handler_9 = () => window.print();
+    $$self.$$.update = () => {
+      if ($$self.$$.dirty[0] & /*showEditModal*/
+      2) {
+        $:
+          if (!showEditModal) {
+            console.log("\n--- Modal Closed ---");
+            disconnectWebSocket();
+          }
+      }
+      if ($$self.$$.dirty[0] & /*searchQuery, filterBy, dateFrom, dateTo*/
+      60) {
+        $: {
+          searchQuery;
+          filterBy;
+          dateFrom;
+          dateTo;
+          handleSearch();
+        }
+      }
+      if ($$self.$$.dirty[0] & /*filteredCalculations*/
+      1) {
+        $:
+          $$invalidate(13, totals = calculateTotals(filteredCalculations));
+      }
+    };
+    return [
+      filteredCalculations,
+      showEditModal,
+      searchQuery,
+      filterBy,
+      dateFrom,
+      dateTo,
+      calculations,
+      loading,
+      showModal,
+      selectedCalc,
+      editingCalc,
+      showInvoiceModal,
+      selectedInvoice,
+      totals,
+      filterOptions,
+      handleEdit,
+      openEditModal,
+      formatCurrency,
+      formatDate,
+      showDetails,
+      generateInvoice,
+      formatFullDate,
+      refreshData,
+      select_change_handler,
+      input0_input_handler,
+      input1_input_handler,
+      input2_input_handler,
+      click_handler,
+      click_handler_1,
+      click_handler_2,
+      click_handler_3,
+      click_handler_4,
+      click_handler_5,
+      input0_input_handler_1,
+      input1_input_handler_1,
+      input2_input_handler_1,
+      input3_input_handler,
+      input4_input_handler,
+      input5_input_handler,
+      input6_input_handler,
+      input7_input_handler,
+      click_handler_6,
+      click_handler_7,
+      click_handler_8,
+      click_handler_9
+    ];
+  }
+  var WS_URL, CalculateHistory, CalculateHistory_default;
+  var init_CalculateHistory2 = __esm({
+    "resources/js/Components/CalculateHistory.svelte"() {
+      init_internal();
+      init_disclose_version();
+      init_runtime();
+      init_axios2();
+      init_helper();
+      init_CalculateHistory();
+      WS_URL = "ws://localhost:3000/ws-edit";
+      CalculateHistory = class extends SvelteComponent {
+        constructor(options) {
+          super();
+          init(this, options, instance8, create_fragment10, safe_not_equal, { refreshData: 22 }, null, [-1, -1]);
+        }
+        get refreshData() {
+          return this.$$.ctx[22];
+        }
+      };
+      CalculateHistory_default = CalculateHistory;
+    }
+  });
+
+  // resources/js/Pages/dashboard/calculate.svelte
+  var calculate_exports = {};
+  __export(calculate_exports, {
+    default: () => calculate_default
+  });
+  function create_default_slot5(ctx) {
+    let div14;
+    let div12;
+    let div0;
+    let h1;
+    let t0;
+    let t1;
+    let p;
+    let t2;
+    let t3;
+    let div4;
+    let h2;
+    let t5;
+    let div3;
+    let button0;
+    let div1;
+    let button0_class_value;
+    let t7;
+    let button1;
+    let div2;
+    let button1_class_value;
+    let t9;
+    let form;
+    let div10;
+    let div5;
+    let label0;
+    let t11;
+    let input0;
+    let t12;
+    let div6;
+    let label1;
+    let t14;
+    let input1;
+    let t15;
+    let div7;
+    let label2;
+    let t17;
+    let input2;
+    let t18;
+    let div8;
+    let label3;
+    let t20;
+    let input3;
+    let input3_value_value;
+    let t21;
+    let div9;
+    let label4;
+    let t23;
+    let input4;
+    let input4_value_value;
+    let t24;
+    let div11;
+    let t26;
+    let calculatehistory;
+    let t27;
+    let div13;
+    let button3;
+    let current;
+    let mounted;
+    let dispose;
+    let calculatehistory_props = {};
+    calculatehistory = new CalculateHistory_default({ props: calculatehistory_props });
+    ctx[18](calculatehistory);
+    return {
+      c() {
+        div14 = element("div");
+        div12 = element("div");
+        div0 = element("div");
+        h1 = element("h1");
+        t0 = text(
+          /*title*/
+          ctx[0]
+        );
+        t1 = space();
+        p = element("p");
+        t2 = text(
+          /*description*/
+          ctx[1]
+        );
+        t3 = space();
+        div4 = element("div");
+        h2 = element("h2");
+        h2.textContent = "Pilih Jenis Kendaraan:";
+        t5 = space();
+        div3 = element("div");
+        button0 = element("button");
+        div1 = element("div");
+        div1.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                Truk`;
+        t7 = space();
+        button1 = element("button");
+        div2 = element("div");
+        div2.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                Gandengan`;
+        t9 = space();
+        form = element("form");
+        div10 = element("div");
+        div5 = element("div");
+        label0 = element("label");
+        label0.textContent = "Nomor Kendaraan";
+        t11 = space();
+        input0 = element("input");
+        t12 = space();
+        div6 = element("div");
+        label1 = element("label");
+        label1.textContent = "Nama Sopir";
+        t14 = space();
+        input1 = element("input");
+        t15 = space();
+        div7 = element("div");
+        label2 = element("label");
+        label2.textContent = "Nama Pemilik";
+        t17 = space();
+        input2 = element("input");
+        t18 = space();
+        div8 = element("div");
+        label3 = element("label");
+        label3.textContent = "Berat Isi (KG)";
+        t20 = space();
+        input3 = element("input");
+        t21 = space();
+        div9 = element("div");
+        label4 = element("label");
+        label4.textContent = "Harga per KG";
+        t23 = space();
+        input4 = element("input");
+        t24 = space();
+        div11 = element("div");
+        div11.innerHTML = `<button type="submit" class="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Simpan</button>`;
+        t26 = space();
+        create_component(calculatehistory.$$.fragment);
+        t27 = space();
+        div13 = element("div");
+        button3 = element("button");
+        button3.textContent = "Hapus Semua Data";
+        attr(h1, "class", "text-4xl font-bold text-gray-900");
+        attr(p, "class", "mt-3 text-lg text-gray-600");
+        attr(div0, "class", "mb-10 text-center");
+        attr(h2, "class", "text-lg font-semibold text-gray-800 mb-4 text-center");
+        attr(div1, "class", "flex items-center justify-center");
+        attr(button0, "type", "button");
+        attr(button0, "class", button0_class_value = "flex-1 py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 " + /*selectedType*/
+        (ctx[3] === "truk" ? "bg-blue-600 text-white shadow-lg scale-105" : "bg-gray-100 text-gray-600 hover:bg-gray-200"));
+        attr(div2, "class", "flex items-center justify-center");
+        attr(button1, "type", "button");
+        attr(button1, "class", button1_class_value = "flex-1 py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 " + /*selectedType*/
+        (ctx[3] === "gandengan" ? "bg-blue-600 text-white shadow-lg scale-105" : "bg-gray-100 text-gray-600 hover:bg-gray-200"));
+        attr(div3, "class", "flex gap-4");
+        attr(div4, "class", "mb-8 max-w-2xl mx-auto");
+        attr(label0, "class", "block text-base font-semibold text-gray-700");
+        attr(input0, "type", "text");
+        attr(input0, "class", "w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg uppercase transition duration-200");
+        attr(input0, "placeholder", "Masukkan Nomor Kendaraan");
+        input0.required = true;
+        attr(div5, "class", "space-y-3");
+        attr(label1, "class", "block text-base font-semibold text-gray-700");
+        attr(input1, "type", "text");
+        attr(input1, "class", "w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg transition duration-200");
+        attr(input1, "placeholder", "Masukkan Nama Sopir");
+        input1.required = true;
+        attr(div6, "class", "space-y-3");
+        attr(label2, "class", "block text-base font-semibold text-gray-700");
+        attr(input2, "type", "text");
+        attr(input2, "class", "w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg transition duration-200");
+        attr(input2, "placeholder", "Masukkan Nama Pemilik");
+        input2.required = true;
+        attr(div7, "class", "space-y-3");
+        attr(label3, "class", "block text-base font-semibold text-gray-700");
+        attr(input3, "type", "text");
+        input3.value = input3_value_value = /*formData*/
+        ctx[4].entryWeight ? formatNumber2((unformatNumber2(
+          /*formData*/
+          ctx[4].entryWeight
+        ) / 1e3).toFixed(2)).replace(".", ",") : "";
+        attr(input3, "class", "w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg text-right transition duration-200");
+        attr(input3, "placeholder", "0");
+        input3.required = true;
+        attr(div8, "class", "space-y-3");
+        attr(label4, "class", "block text-base font-semibold text-gray-700");
+        attr(input4, "type", "text");
+        input4.value = input4_value_value = /*formData*/
+        ctx[4].pricePerKg;
+        attr(input4, "class", "w-full h-12 px-4 rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-lg text-right transition duration-200");
+        attr(input4, "placeholder", "0");
+        input4.required = true;
+        attr(div9, "class", "space-y-3");
+        attr(div10, "class", "grid grid-cols-1 md:grid-cols-2 gap-8");
+        attr(div11, "class", "flex justify-end pt-4");
+        attr(form, "class", "space-y-8");
+        attr(div12, "class", "bg-white rounded-xl shadow-lg p-8");
+        attr(button3, "type", "button");
+        attr(button3, "class", "px-6 py-3 bg-red-600 text-white text-base font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200");
+        attr(div13, "class", "mt-8 flex justify-end");
+        attr(div14, "class", "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8");
+      },
+      m(target, anchor) {
+        insert(target, div14, anchor);
+        append2(div14, div12);
+        append2(div12, div0);
+        append2(div0, h1);
+        append2(h1, t0);
+        append2(div0, t1);
+        append2(div0, p);
+        append2(p, t2);
+        append2(div12, t3);
+        append2(div12, div4);
+        append2(div4, h2);
+        append2(div4, t5);
+        append2(div4, div3);
+        append2(div3, button0);
+        append2(button0, div1);
+        append2(div3, t7);
+        append2(div3, button1);
+        append2(button1, div2);
+        append2(div12, t9);
+        append2(div12, form);
+        append2(form, div10);
+        append2(div10, div5);
+        append2(div5, label0);
+        append2(div5, t11);
+        append2(div5, input0);
+        set_input_value(
+          input0,
+          /*formData*/
+          ctx[4].vehicleNumber
+        );
+        append2(div10, t12);
+        append2(div10, div6);
+        append2(div6, label1);
+        append2(div6, t14);
+        append2(div6, input1);
+        set_input_value(
+          input1,
+          /*formData*/
+          ctx[4].driverName
+        );
+        append2(div10, t15);
+        append2(div10, div7);
+        append2(div7, label2);
+        append2(div7, t17);
+        append2(div7, input2);
+        set_input_value(
+          input2,
+          /*formData*/
+          ctx[4].ownerName
+        );
+        append2(div10, t18);
+        append2(div10, div8);
+        append2(div8, label3);
+        append2(div8, t20);
+        append2(div8, input3);
+        append2(div10, t21);
+        append2(div10, div9);
+        append2(div9, label4);
+        append2(div9, t23);
+        append2(div9, input4);
+        append2(form, t24);
+        append2(form, div11);
+        append2(div14, t26);
+        mount_component(calculatehistory, div14, null);
+        append2(div14, t27);
+        append2(div14, div13);
+        append2(div13, button3);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              button0,
+              "click",
+              /*click_handler*/
+              ctx[11]
+            ),
+            listen(
+              button1,
+              "click",
+              /*click_handler_1*/
+              ctx[12]
+            ),
+            listen(
+              input0,
+              "input",
+              /*input0_input_handler*/
+              ctx[13]
+            ),
+            listen(
+              input1,
+              "input",
+              /*input1_input_handler*/
+              ctx[14]
+            ),
+            listen(
+              input2,
+              "input",
+              /*input2_input_handler*/
+              ctx[15]
+            ),
+            listen(
+              input3,
+              "input",
+              /*input_handler*/
+              ctx[16]
+            ),
+            listen(
+              input4,
+              "input",
+              /*input_handler_1*/
+              ctx[17]
+            ),
+            listen(form, "submit", prevent_default(
+              /*handleSubmit*/
+              ctx[8]
+            )),
+            listen(
+              button3,
+              "click",
+              /*deleteAllData*/
+              ctx[9]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (!current || dirty & /*title*/
+        1)
+          set_data(
+            t0,
+            /*title*/
+            ctx2[0]
+          );
+        if (!current || dirty & /*description*/
+        2)
+          set_data(
+            t2,
+            /*description*/
+            ctx2[1]
+          );
+        if (!current || dirty & /*selectedType*/
+        8 && button0_class_value !== (button0_class_value = "flex-1 py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 " + /*selectedType*/
+        (ctx2[3] === "truk" ? "bg-blue-600 text-white shadow-lg scale-105" : "bg-gray-100 text-gray-600 hover:bg-gray-200"))) {
+          attr(button0, "class", button0_class_value);
+        }
+        if (!current || dirty & /*selectedType*/
+        8 && button1_class_value !== (button1_class_value = "flex-1 py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 " + /*selectedType*/
+        (ctx2[3] === "gandengan" ? "bg-blue-600 text-white shadow-lg scale-105" : "bg-gray-100 text-gray-600 hover:bg-gray-200"))) {
+          attr(button1, "class", button1_class_value);
+        }
+        if (dirty & /*formData*/
+        16 && input0.value !== /*formData*/
+        ctx2[4].vehicleNumber) {
+          set_input_value(
+            input0,
+            /*formData*/
+            ctx2[4].vehicleNumber
+          );
+        }
+        if (dirty & /*formData*/
+        16 && input1.value !== /*formData*/
+        ctx2[4].driverName) {
+          set_input_value(
+            input1,
+            /*formData*/
+            ctx2[4].driverName
+          );
+        }
+        if (dirty & /*formData*/
+        16 && input2.value !== /*formData*/
+        ctx2[4].ownerName) {
+          set_input_value(
+            input2,
+            /*formData*/
+            ctx2[4].ownerName
+          );
+        }
+        if (!current || dirty & /*formData*/
+        16 && input3_value_value !== (input3_value_value = /*formData*/
+        ctx2[4].entryWeight ? formatNumber2((unformatNumber2(
+          /*formData*/
+          ctx2[4].entryWeight
+        ) / 1e3).toFixed(2)).replace(".", ",") : "") && input3.value !== input3_value_value) {
+          input3.value = input3_value_value;
+        }
+        if (!current || dirty & /*formData*/
+        16 && input4_value_value !== (input4_value_value = /*formData*/
+        ctx2[4].pricePerKg) && input4.value !== input4_value_value) {
+          input4.value = input4_value_value;
+        }
+        const calculatehistory_changes = {};
+        calculatehistory.$set(calculatehistory_changes);
+      },
+      i(local) {
+        if (current)
+          return;
+        transition_in(calculatehistory.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(calculatehistory.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div14);
+        }
+        ctx[18](null);
+        destroy_component(calculatehistory);
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_fragment11(ctx) {
+    let globallayout;
+    let current;
+    globallayout = new GlobalLayout_default({
+      props: {
+        $$slots: { default: [create_default_slot5] },
+        $$scope: { ctx }
+      }
+    });
+    return {
+      c() {
+        create_component(globallayout.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(globallayout, target, anchor);
+        current = true;
+      },
+      p(ctx2, [dirty]) {
+        const globallayout_changes = {};
+        if (dirty & /*$$scope, calculateHistoryComponent, formData, selectedType, description, title*/
+        67108895) {
+          globallayout_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        globallayout.$set(globallayout_changes);
+      },
+      i(local) {
+        if (current)
+          return;
+        transition_in(globallayout.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(globallayout.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        destroy_component(globallayout, detaching);
+      }
+    };
+  }
+  function formatNumber2(value) {
+    if (!value)
+      return "";
+    if (typeof value === "number") {
+      const formattedValue = value.toFixed(2);
+      const [whole2, decimal2] = formattedValue.split(".");
+      const formattedWhole2 = whole2.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return decimal2 ? `${formattedWhole2},${decimal2}` : formattedWhole2;
+    }
+    const [whole, decimal] = value.toString().split(".");
+    const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return decimal ? `${formattedWhole},${decimal}` : formattedWhole;
+  }
+  function unformatNumber2(value) {
+    if (!value)
+      return 0;
+    return parseFloat(value.toString().replace(/,/g, ""));
+  }
+  function instance9($$self, $$props, $$invalidate) {
+    let { user } = $$props;
+    let { title } = $$props;
+    let { description } = $$props;
+    let calculateHistoryComponent;
+    let port;
+    let reader;
+    let socket;
+    function processWeight(weight) {
+      const MIN_WEIGHT_THRESHOLD = 100;
+      console.log("Processing weight:", weight);
+      if (weight >= MIN_WEIGHT_THRESHOLD) {
+        const currentWeight = unformatNumber2(formData.entryWeight);
+        if (weight !== currentWeight) {
+          console.log("New weight measurement:", weight, "Current:", currentWeight);
+          $$invalidate(4, formData.entryWeight = formatNumber2(Math.round(weight).toString()), formData);
+          calculateWeight();
+        }
+      } else {
+        console.log("Ignoring weight below threshold:", weight);
+      }
+    }
+    async function connectArduino() {
+      try {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          Toast("Arduino sudah terhubung", "info");
+          return;
+        }
+        console.log("Attempting to connect to WebSocket at:", WS_URL2);
+        try {
+          socket = new WebSocket(WS_URL2);
+          socket.onopen = () => {
+            Toast("Arduino berhasil terhubung", "success");
+            console.log("WebSocket Connected");
+          };
+          socket.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              console.log("Received WebSocket data:", data);
+              if (data.type === "weight" && data.weight) {
+                processWeight(Math.abs(parseFloat(data.weight)));
+              }
+            } catch (err) {
+              console.error("Error processing WebSocket data:", err);
+            }
+          };
+          socket.onerror = (error) => {
+            console.error("WebSocket Error:", error);
+            Toast("Gagal terhubung ke Arduino", "error");
+          };
+          socket.onclose = () => {
+            console.log("WebSocket Disconnected");
+            Toast("Koneksi terputus, mencoba menghubungkan kembali...", "error");
+            setTimeout(connectArduino, 5e3);
+          };
+        } catch (wsError) {
+          console.error("WebSocket connection failed:", wsError);
+          Toast("Gagal terhubung ke Arduino", "error");
+        }
+      } catch (error) {
+        Toast(`Gagal menghubungkan Arduino: ${error.message}`, "error");
+        console.error("Connection error:", error);
+      }
+    }
+    async function readSerialData() {
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let lastWeight = 0;
+      let initialWeightSet = false;
+      const MIN_WEIGHT_THRESHOLD = 100;
+      try {
+        console.log("Starting to read serial data...");
+        while (port && keepReading) {
+          const { value, done } = await reader.read();
+          if (done) {
+            console.log("Reader done, breaking loop");
+            reader.releaseLock();
+            break;
+          }
+          const decodedData = decoder.decode(value);
+          console.log("Raw decoded data:", decodedData);
+          buffer += decodedData;
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim())
+              continue;
+            console.log("Processing line:", line);
+            const weightMatch = line.match(/Reading:\s*([-]?\d+\.?\d*)\s*gram/);
+            if (weightMatch) {
+              const weight = Math.abs(parseFloat(weightMatch[1]));
+              console.log("Extracted weight:", weight);
+              if (weight >= MIN_WEIGHT_THRESHOLD) {
+                if (!initialWeightSet) {
+                  lastWeight = weight;
+                  $$invalidate(4, formData.entryWeight = formatNumber2(Math.round(weight).toString()), formData);
+                  calculateWeight();
+                  initialWeightSet = true;
+                  console.log("Initial weight set to:", weight);
+                } else {
+                  const currentWeight = unformatNumber2(formData.entryWeight);
+                  if (weight !== currentWeight) {
+                    console.log("New weight measurement:", weight, "Current:", currentWeight);
+                    $$invalidate(4, formData.entryWeight = formatNumber2(Math.round(weight).toString()), formData);
+                    calculateWeight();
+                    lastWeight = weight;
+                  }
+                }
+              } else {
+                console.log("Ignoring weight below threshold:", weight);
+              }
+            } else if (line.includes("Zero factor:")) {
+              const zeroMatch = line.match(/Zero factor:\s*(\d+)/);
+              if (zeroMatch) {
+                console.log("Found zero factor:", zeroMatch[1]);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error reading serial data:", error);
+        Toast("Error membaca data dari Arduino", "error");
+        if (port) {
+          try {
+            reader.releaseLock();
+            await port.close();
+          } catch (e) {
+            console.error("Error closing port:", e);
+          }
+          port = null;
+          Toast("Koneksi terputus, silakan hubungkan kembali", "error");
+        }
+      }
+    }
+    onMount(() => {
+      connectArduino();
+    });
+    onDestroy(() => {
+      if (socket) {
+        socket.close();
+      }
+    });
+    let selectedType = "";
+    let formData = {
+      vehicleNumber: "",
+      driverName: "",
+      ownerName: "",
+      entryWeight: "",
+      pricePerKg: "",
+      entryDateTime: Date.now(),
+      types: ""
+    };
+    let results = { totalPrice: 0 };
+    function handleNumberInput(event, field) {
+      const value = event.target.value.replace(/\D/g, "");
+      $$invalidate(4, formData[field] = formatNumber2(value), formData);
+    }
+    function calculateWeight() {
+      const entryWeight = unformatNumber2(formData.entryWeight);
+      results = {
+        totalPrice: entryWeight / 1e3 * unformatNumber2(formData.pricePerKg)
+      };
+    }
+    function selectVehicleType(type) {
+      $$invalidate(3, selectedType = type);
+      $$invalidate(4, formData = { ...formData, types: type });
+    }
+    async function handleSubmit() {
+      if (!formData.types) {
+        Toast("Pilih jenis kendaraan terlebih dahulu", "error");
+        return;
+      }
+      try {
+        const entryWeight = unformatNumber2(formData.entryWeight);
+        const payload = {
+          vehicleNumber: formData.vehicleNumber,
+          driverName: formData.driverName,
+          ownerName: formData.ownerName,
+          entryWeight,
+          pricePerKg: unformatNumber2(formData.pricePerKg),
+          entryDateTime: formData.entryDateTime,
+          types: selectedType,
+          userId: user.id
+        };
+        console.log("Submitting payload:", payload);
+        const response = await axios_default.post("/api/calculate", payload);
+        console.log("Response:", response.data);
+        if (response.data.success) {
+          Toast("Data berhasil disimpan", "success");
+          const currentPricePerKg = formData.pricePerKg;
+          const currentType = selectedType;
+          $$invalidate(4, formData = {
+            vehicleNumber: "",
+            driverName: "",
+            ownerName: "",
+            entryWeight: "",
+            pricePerKg: currentPricePerKg,
+            entryDateTime: Date.now(),
+            types: currentType
+          });
+          $$invalidate(3, selectedType = currentType);
+          if (calculateHistoryComponent) {
+            await calculateHistoryComponent.refreshData();
+          }
+        }
+      } catch (error) {
+        Toast("Gagal menyimpan data", "error");
+        console.error("Submit error:", error);
+      }
+    }
+    async function deleteAllData() {
+      if (confirm("Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan.")) {
+        try {
+          const response = await axios_default.delete("/api/calculate/all");
+          if (response.data.success) {
+            Toast("Semua data berhasil dihapus", "success");
+            if (calculateHistoryComponent) {
+              await calculateHistoryComponent.refreshData();
+            }
+          }
+        } catch (error) {
+          Toast("Gagal menghapus data", "error");
+          console.error("Delete all error:", error);
+        }
+      }
+    }
+    const click_handler = () => selectVehicleType("truk");
+    const click_handler_1 = () => selectVehicleType("gandengan");
+    function input0_input_handler() {
+      formData.vehicleNumber = this.value;
+      $$invalidate(4, formData);
+    }
+    function input1_input_handler() {
+      formData.driverName = this.value;
+      $$invalidate(4, formData);
+    }
+    function input2_input_handler() {
+      formData.ownerName = this.value;
+      $$invalidate(4, formData);
+    }
+    const input_handler = (e) => {
+      const kgValue = e.target.value.replace(/[^\d,]/g, "").replace(",", ".");
+      const gramValue = (parseFloat(kgValue) * 1e3).toString();
+      $$invalidate(4, formData.entryWeight = formatNumber2(gramValue), formData);
+      calculateWeight();
+    };
+    const input_handler_1 = (e) => handleNumberInput(e, "pricePerKg");
+    function calculatehistory_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        calculateHistoryComponent = $$value;
+        $$invalidate(2, calculateHistoryComponent);
+      });
+    }
+    $$self.$$set = ($$props2) => {
+      if ("user" in $$props2)
+        $$invalidate(10, user = $$props2.user);
+      if ("title" in $$props2)
+        $$invalidate(0, title = $$props2.title);
+      if ("description" in $$props2)
+        $$invalidate(1, description = $$props2.description);
+    };
+    return [
+      title,
+      description,
+      calculateHistoryComponent,
+      selectedType,
+      formData,
+      handleNumberInput,
+      calculateWeight,
+      selectVehicleType,
+      handleSubmit,
+      deleteAllData,
+      user,
+      click_handler,
+      click_handler_1,
+      input0_input_handler,
+      input1_input_handler,
+      input2_input_handler,
+      input_handler,
+      input_handler_1,
+      calculatehistory_binding
+    ];
+  }
+  var keepReading, WS_URL2, Calculate, calculate_default;
+  var init_calculate = __esm({
+    "resources/js/Pages/dashboard/calculate.svelte"() {
+      init_internal();
+      init_disclose_version();
+      init_GlobalLayout();
+      init_helper();
+      init_axios2();
+      init_CalculateHistory2();
+      init_runtime();
+      keepReading = true;
+      WS_URL2 = "ws://localhost:3000/ws";
+      Calculate = class extends SvelteComponent {
+        constructor(options) {
+          super();
+          init(this, options, instance9, create_fragment11, safe_not_equal, { user: 10, title: 0, description: 1 });
+        }
+      };
+      calculate_default = Calculate;
     }
   });
 
@@ -11208,18 +14990,24 @@ Please specify a more appropriate element using the "as" attribute. For example:
       }
     };
   }
-  function create_default_slot5(ctx) {
+  function create_default_slot6(ctx) {
     let div1;
     let div0;
     let h1;
+    let t0;
+    let t1_value = (
+      /*user*/
+      ctx[0].nama + ""
+    );
     let t1;
+    let t2;
     let p;
-    let t3;
+    let t4;
     let link;
     let current;
     link = new Link_default({
       props: {
-        href: "/login",
+        href: "/dashboard/calculate",
         class: "inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-lg transition duration-200",
         $$slots: { default: [create_default_slot_13] },
         $$scope: { ctx }
@@ -11230,11 +15018,12 @@ Please specify a more appropriate element using the "as" attribute. For example:
         div1 = element("div");
         div0 = element("div");
         h1 = element("h1");
-        h1.textContent = "ANDA TELAH LOGIN";
-        t1 = space();
+        t0 = text("ANDA TELAH LOGIN : ");
+        t1 = text(t1_value);
+        t2 = space();
         p = element("p");
         p.textContent = "Solusi modern untuk penimbangan yang akurat dan efisien";
-        t3 = space();
+        t4 = space();
         create_component(link.$$.fragment);
         attr(h1, "class", "text-4xl font-bold text-gray-800 mb-4");
         attr(p, "class", "text-lg text-gray-600 mb-8");
@@ -11245,16 +15034,22 @@ Please specify a more appropriate element using the "as" attribute. For example:
         insert(target, div1, anchor);
         append2(div1, div0);
         append2(div0, h1);
-        append2(div0, t1);
+        append2(h1, t0);
+        append2(h1, t1);
+        append2(div0, t2);
         append2(div0, p);
-        append2(div0, t3);
+        append2(div0, t4);
         mount_component(link, div0, null);
         current = true;
       },
       p(ctx2, dirty) {
+        if ((!current || dirty & /*user*/
+        1) && t1_value !== (t1_value = /*user*/
+        ctx2[0].nama + ""))
+          set_data(t1, t1_value);
         const link_changes = {};
         if (dirty & /*$$scope*/
-        1) {
+        2) {
           link_changes.$$scope = { dirty, ctx: ctx2 };
         }
         link.$set(link_changes);
@@ -11277,12 +15072,12 @@ Please specify a more appropriate element using the "as" attribute. For example:
       }
     };
   }
-  function create_fragment10(ctx) {
+  function create_fragment12(ctx) {
     let globallayout;
     let current;
     globallayout = new GlobalLayout_default({
       props: {
-        $$slots: { default: [create_default_slot5] },
+        $$slots: { default: [create_default_slot6] },
         $$scope: { ctx }
       }
     });
@@ -11296,8 +15091,8 @@ Please specify a more appropriate element using the "as" attribute. For example:
       },
       p(ctx2, [dirty]) {
         const globallayout_changes = {};
-        if (dirty & /*$$scope*/
-        1) {
+        if (dirty & /*$$scope, user*/
+        3) {
           globallayout_changes.$$scope = { dirty, ctx: ctx2 };
         }
         globallayout.$set(globallayout_changes);
@@ -11317,6 +15112,14 @@ Please specify a more appropriate element using the "as" attribute. For example:
       }
     };
   }
+  function instance10($$self, $$props, $$invalidate) {
+    let { user } = $$props;
+    $$self.$$set = ($$props2) => {
+      if ("user" in $$props2)
+        $$invalidate(0, user = $$props2.user);
+    };
+    return [user];
+  }
   var Home, home_default;
   var init_home = __esm({
     "resources/js/Pages/dashboard/home.svelte"() {
@@ -11327,7 +15130,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
       Home = class extends SvelteComponent {
         constructor(options) {
           super();
-          init(this, options, null, create_fragment10, safe_not_equal, {});
+          init(this, options, instance10, create_fragment12, safe_not_equal, { user: 0 });
         }
       };
       home_default = Home;
@@ -11355,7 +15158,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
       }
     };
   }
-  function create_default_slot6(ctx) {
+  function create_default_slot7(ctx) {
     let div1;
     let div0;
     let h1;
@@ -11424,12 +15227,12 @@ Please specify a more appropriate element using the "as" attribute. For example:
       }
     };
   }
-  function create_fragment11(ctx) {
+  function create_fragment13(ctx) {
     let globallayout;
     let current;
     globallayout = new GlobalLayout_default({
       props: {
-        $$slots: { default: [create_default_slot6] },
+        $$slots: { default: [create_default_slot7] },
         $$scope: { ctx }
       }
     });
@@ -11474,7 +15277,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
       Home2 = class extends SvelteComponent {
         constructor(options) {
           super();
-          init(this, options, null, create_fragment11, safe_not_equal, {});
+          init(this, options, null, create_fragment13, safe_not_equal, {});
         }
       };
       home_default2 = Home2;
@@ -11488,6 +15291,7 @@ Please specify a more appropriate element using the "as" attribute. For example:
   var globImport_Pages_svelte = __glob({
     "./Pages/auth/login.svelte": () => Promise.resolve().then(() => (init_login(), login_exports)),
     "./Pages/auth/register.svelte": () => Promise.resolve().then(() => (init_register(), register_exports)),
+    "./Pages/dashboard/calculate.svelte": () => Promise.resolve().then(() => (init_calculate(), calculate_exports)),
     "./Pages/dashboard/home.svelte": () => Promise.resolve().then(() => (init_home(), home_exports)),
     "./Pages/home.svelte": () => Promise.resolve().then(() => (init_home2(), home_exports2))
   });

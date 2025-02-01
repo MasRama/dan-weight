@@ -6,14 +6,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const knexfile_1 = __importDefault(require("../../knexfile"));
 require('dotenv').config();
 const dbInstance = {};
-let DB = require('knex')(knexfile_1.default[process.env.DB_CONNECTION]);
-DB.connection = (stage) => {
-    if (dbInstance[stage]) {
-        return dbInstance[stage];
+const stage = process.env.DB_CONNECTION || 'development';
+let DB = require('knex')(knexfile_1.default[stage]);
+DB.connection = (connectionStage = stage) => {
+    if (dbInstance[connectionStage]) {
+        return dbInstance[connectionStage];
     }
-    else {
-        dbInstance[stage] = DB = require('knex')(knexfile_1.default[stage]);
-        return dbInstance[stage];
-    }
+    dbInstance[connectionStage] = require('knex')(knexfile_1.default[connectionStage]);
+    return dbInstance[connectionStage];
 };
 exports.default = DB;

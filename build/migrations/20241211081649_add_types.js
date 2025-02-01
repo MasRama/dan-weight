@@ -8,12 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const DB_1 = __importDefault(require("./app/services/DB"));
-(() => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(yield (0, DB_1.default)('calculations').select());
-    process.exit(1);
-}))();
+exports.up = up;
+exports.down = down;
+function up(knex) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return knex.schema.alterTable('calculations', (table) => {
+            table.string('types').nullable();
+        });
+    });
+}
+function down(knex) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return knex.schema.alterTable('calculations', (table) => {
+            table.dropColumn('types');
+        });
+    });
+}

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
-// Update with your config settings.
+const stage = process.env.DB_CONNECTION || 'development';
 const config = {
     development: {
         client: "better-sqlite3",
@@ -23,6 +23,7 @@ const config = {
             filename: "./database/production.sqlite3"
         },
         useNullAsDefault: true
-    },
+    }
 };
+console.log(`Using ${stage} database configuration`);
 exports.default = config;

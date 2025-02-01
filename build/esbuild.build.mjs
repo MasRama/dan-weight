@@ -17,7 +17,7 @@ const result = await esbuild.build({
     entryPoints: ['./resources/js/app.js'],
     mainFields: ["svelte", "browser", "module", "main"],
     conditions: ["svelte", "browser"],
-    loader: { '.svg': 'text', '.ts': 'ts' },
+    loader: { '.svg': 'text' },
     bundle: true,
     minify: false,
     write: false,

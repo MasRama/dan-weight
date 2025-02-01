@@ -15,50 +15,57 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const DB_1 = __importDefault(require("../services/DB"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = __importDefault(require("crypto"));
+const uuid_1 = require("uuid");
 class Controller {
     login(request, response) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            if (request.method === "GET") {
-                const flash = ((_a = request.session) === null || _a === void 0 ? void 0 : _a.flash) || {};
-                return response.inertia("auth/login", { flash });
-            }
+            const flash = ((_a = request.session) === null || _a === void 0 ? void 0 : _a.flash) || {};
+            return response.inertia("auth/login", { flash });
+        });
+    }
+    processLogin(request, response) {
+        return __awaiter(this, void 0, void 0, function* () {
             try {
                 const body = yield request.json();
                 const { email, password } = body;
-                const user = yield (0, DB_1.default)("users")
-                    .where("email", email)
+                const user = yield DB_1.default.from('users')
+                    .where('email', email)
                     .first();
-                if (!user) {
-                    return response.json({
-                        message: "Email not found"
-                    }, 400);
+                if (!user || !(yield bcrypt_1.default.compare(password, user.password))) {
+                    return response.status(401).json({
+                        error: 'Invalid credentials'
+                    });
                 }
-                const validPassword = yield bcrypt_1.default.compare(password, user.password);
-                if (!validPassword) {
-                    return response.json({
-                        message: "Invalid password"
-                    }, 400);
-                }
-                // Initialize session if it doesn't exist
-                if (!request.session) {
-                    request.session = {};
-                }
-                request.session.user = {
-                    id: user.id,
-                    email: user.email,
-                    name: user.nama,
-                    apiKey: user.api_key
-                };
+                // Delete existing sessions for this user
+                yield (0, DB_1.default)('sessions')
+                    .where('user_id', user.id)
+                    .delete();
+                // Create new session
+                const sessionId = (0, uuid_1.v4)();
+                const expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7);
+                yield (0, DB_1.default)('sessions').insert({
+                    id: sessionId,
+                    user_id: user.id,
+                    token: (0, uuid_1.v4)(),
+                    expires_at: expiresAt.toISOString()
+                });
+                response.cookie('auth_id', sessionId, {
+                    httpOnly: true,
+                    secure: process.env.DB_CONNECTION === 'production',
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    path: '/'
+                });
                 return response.json({
-                    message: "Login successful"
-                }, 200);
+                    message: 'Login successful'
+                });
             }
             catch (error) {
                 console.log(error);
-                return response.json({
-                    message: "Server error occurred"
-                }, 500);
+                return response.status(500).json({
+                    error: 'Server error'
+                });
             }
         });
     }
@@ -71,15 +78,15 @@ class Controller {
             if (request.method === "GET") {
                 return response.inertia("auth/register");
             }
-            const body = yield request.json();
-            const { name, email, password } = body;
             try {
+                const body = yield request.json();
+                const { name, email, password } = body;
                 const existingUser = yield (0, DB_1.default)("users")
                     .where("email", email)
                     .first();
                 if (existingUser) {
                     return response.json({
-                        error: "Email already registered"
+                        message: "Email is already registered"
                     }, 400);
                 }
                 const salt = yield bcrypt_1.default.genSalt(10);
@@ -91,12 +98,14 @@ class Controller {
                     password: hashedPassword,
                     api_key: apiKey
                 });
-                return response.redirect('/login');
+                return response.json({
+                    message: "Registration successful"
+                }, 200);
             }
             catch (error) {
-                console.log(error);
+                console.error(error);
                 return response.json({
-                    error: "Server error occurred"
+                    message: "Server error occurred"
                 }, 500);
             }
         });
